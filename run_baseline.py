@@ -6,7 +6,7 @@ from stable_baselines3.common.callbacks import EvalCallback
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-log_dir', type=str, default='gait_modeling_results/')
+parser.add_argument('-log_dir', type=str, default='results/')
 parser.add_argument('-exp_name', type=str, default='default_exp')
 parser.add_argument('-time_steps', type=int, default=5e7)
 parser.add_argument('-imp', action='store_true')  # use random impulses
@@ -18,6 +18,22 @@ parser.add_argument('-vis_ref', action='store_true')
 
 parser.add_argument('-t', action='store_true')
 parser.add_argument('-v', action='store_true')
+
+
+"""
+Example commands: 
+    Train model to walk 
+        python run_baseline.py -t 
+    
+    Train model w/ random impulses 
+        python run_baseline.py -t -imp 
+
+    Visualize policy 
+        python run_baseline.py -v 
+
+    View tensorboard from curr directory: 
+        tensorboard --logdir results/tf/
+"""
 
 
 if __name__ == "__main__":
@@ -33,7 +49,7 @@ if __name__ == "__main__":
         eval_env = make_vec_env(lambda:env, n_envs=1)
 
         eval_callback = EvalCallback(eval_env, best_model_save_path=args.log_dir + args.exp_name, log_path=args.log_dir + args.exp_name, eval_freq=1000, deterministic=True, render=False)
-        model = PPO("MlpPolicy", train_env, batch_size=32, use_sde=False, n_steps=512, n_epochs=20, gamma=.99, gae_lambda=.95, target_kl=.01, verbose=True,  clip_range=.1, ent_coef=.000585045, vf_coef=0.871923, max_grad_norm=1, learning_rate=5.05041e-5, tensorboard_log = args.log_dir + 'tf/')#, policy_kwargs=policy_kwargs)
+        model = PPO("MlpPolicy", train_env, batch_size=32, use_sde=False, n_steps=512, n_epochs=20, gamma=.99, gae_lambda=.95, target_kl=.01, verbose=True,  clip_range=.1, ent_coef=.000585045, vf_coef=0.871923, max_grad_norm=1, learning_rate=5.05041e-5, tensorboard_log = args.log_dir + 'tf/')
 
         if args.ft:
             model.set_parameters(args.log_dir + args.exp_name + '/best_model')
