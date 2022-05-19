@@ -6,7 +6,7 @@ from stable_baselines3.common.callbacks import EvalCallback
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-log_dir', type=str, default='/gait_modeling_results/')
+parser.add_argument('-log_dir', type=str, default='gait_modeling_results/')
 parser.add_argument('-exp_name', type=str, default='default_exp')
 parser.add_argument('-time_steps', type=int, default=5e7)
 parser.add_argument('-imp', action='store_true')  # use random impulses
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         if args.ft:
             model.set_parameters(args.log_dir + args.exp_name + '/best_model')
 
-        model.learn(total_timesteps=args.time_steps, callback=eval_callback, tb_log_name="run")
+        model.learn(total_timesteps=args.time_steps, callback=eval_callback, tb_log_name=args.exp_name)
 
     # Visualize best policy
     if args.v:
