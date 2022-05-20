@@ -166,6 +166,9 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         self.gait_cycle_time = 1.0
         self.time_offset = np.random.uniform(0, self.gait_cycle_time)  # offsets gait cycle time
 
+        self.max_ep_time = 30
+        self.total_reward = 0
+
         # impulse
         self.impulse_duration = .2
         self.impulse_delay = 5 + np.random.uniform(0, self.gait_cycle_time)  # time between impulses
@@ -173,7 +176,8 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         self.force = self.args.f
         self.lower_impact_lim = 100
 
-        my_mujoco_env.MujocoEnv.__init__(self, xml_file, 8)
+        my_mujoco_env.MujocoEnv.__init__(self, xml_file, 10)
+        self.init_qvel[0] = 1
 
     @property
     def healthy_reward(self):
@@ -197,10 +201,13 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         healthy_angle = min_angle < angle < max_angle
         is_healthy = healthy_z and healthy_angle
 
-        if self.sim.data.time > 30:
-            is_healthy = False
-
         return is_healthy
+
+    def reset_time_limit(self):
+        if self.sim.data.time > self.max_ep_time:
+            return self.reset()
+        else:
+            return self._get_obs()
 
     @property
     def done(self):
@@ -209,19 +216,25 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
     def _get_obs(self):
         position = self.sim.data.qpos.flat.copy()
-        velocity = np.clip(self.sim.data.qvel.flat.copy(), -10, 10)
+        velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
 
         if self._exclude_current_positions_from_observation:
             position = position[1:]
 
-        observation = np.concatenate((position, velocity, np.array([self.get_phase()]))).ravel()
+        observation = np.concatenate((position, velocity / 10, np.array([self.get_phase()]))).ravel()
 
         return observation
 
+    def observe(self):
+        return self._get_obs()
+
+    def get_total_reward(self):
+        return self.total_reward
+
     def step(self, action):
         action = np.array(action.tolist())
-        joint_action = action[0:6]
-        phase_action = action[6]
+        joint_action =  action[0:6]
+        phase_action = (self.get_phase() + 0.2) % 1
 
         ref = self.get_gait_ref(phase_action)  # get reference motion
         joint_target = joint_action + ref[3:]  # add reference motion to action for joints
@@ -249,13 +262,13 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
             # visualize reference motion
             if self.args.vis_ref:
-                self.set_state(ref, self.init_qvel)
+                self.set_state(ref, self.gait_vel_ref(self.get_phase()))
 
         observation = self._get_obs()
 
         # Calculate Reward
-        phase = self.get_phase()
-        ref = self.get_gait_ref(phase)
+        # phase = self.get_phase()
+        # ref = self.get_gait_ref(phase)
 
         joint_ref = ref[3:]
         joint_obs = observation[2:8]
@@ -263,7 +276,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
         pos_ref = ref[0:2]
         pos = self.sim.data.qpos[0:2]
-        pos_reward = 20 * (1-self.sim.data.qvel[0])**2 + (pos_ref[1] - pos[1] ) ** 2
+        pos_reward = 10 * (1-self.sim.data.qvel[0])**2 + (pos_ref[1] - pos[1] ) ** 2
         pos_reward = np.exp(-pos_reward)
 
         orient_ref = ref[2]
@@ -271,10 +284,14 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         orient_reward = 2 * ((orient_ref - orient_obs) ** 2) + 5 * (self.sim.data.qvel[2] ** 2)
         orient_reward = np.exp(-orient_reward)
 
-        reward = orient_reward+joint_reward+pos_reward
+        reward = 0.3*orient_reward+0.4*joint_reward+0.3*pos_reward
+        self.total_reward += reward
 
         done = self.done
+        # if orient_reward < 0.6 or joint_reward < 0.6 or pos_reward < 0.6:
+        #     done = True
         info = {}
+        # print(orient_reward, joint_reward, pos_reward)
         return observation, reward, done, info
 
     def get_gait_ref(self, phase):
@@ -295,7 +312,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         # randomize starting phase alignment
-        self.time_offset = np.random.uniform(0, self.gait_cycle_time)
+        self.time_offset = np.random.randint(0, 50) / 50.0 #np.random.uniform(0, self.gait_cycle_time)
         init_pos_ref = self.get_gait_ref(self.get_phase())
         init_vel_ref = self.gait_vel_ref(self.get_phase())
 
@@ -309,6 +326,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         qvel = init_vel_ref  # self.init_qvel + self.np_random.uniform( low=noise_low, high=noise_high, size=self.model.nv)
 
         self.set_state(qpos, qvel)
+        self.total_reward = 0
 
         observation = self._get_obs()
         return observation

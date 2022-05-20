@@ -69,7 +69,7 @@ class MujocoEnv(gym.Env):
 
         action = self.action_space.sample()
         observation, _reward, done, _info = self.step(action)
-        assert not done
+        # assert not done
 
         self._set_observation_space(observation)
 
@@ -80,8 +80,8 @@ class MujocoEnv(gym.Env):
     def _set_action_space(self):
         #bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
         #low, high = bounds.T
-        low = np.array([-1,-1,-1,-1,-1,-1,0]).astype('float32')
-        high = np.array([1,1,1,1,1,1,1]).astype('float32')
+        low = np.array([-1,-1,-1,-1,-1,-1]).astype('float32')
+        high = np.array([1,1,1,1,1,1]).astype('float32')
 
         self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
