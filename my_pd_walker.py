@@ -238,7 +238,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
     def step(self, action):
         action = np.array(action.tolist())
         joint_action =  action[0:6]
-        phase_action = (self.get_phase() + 0.2) % 1
+        phase_action = (self.get_phase() + self.frame_skip * 0.002) % 1
 
         ref = self.get_gait_ref(phase_action)  # get reference motion
         joint_target = joint_action + ref[3:]  # add reference motion to action for joints

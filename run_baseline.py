@@ -35,9 +35,10 @@ Example commands:
         tensorboard --logdir results/tf/
 """
 
+
 import torch
 policy_kwargs = dict(log_std_init=-2.0,
-                     ortho_init=False,
+                     ortho_init=True,
                      activation_fn=torch.nn.ReLU,
                      net_arch=[dict(pi=[128, 128], vf=[128, 128])])
 
@@ -54,7 +55,6 @@ if __name__ == "__main__":
         train_env = make_vec_env(lambda:env, n_envs=num_cpu, seed=0, vec_env_cls=SubprocVecEnv)
         eval_env = make_vec_env(lambda:env, n_envs=1)
 
-        
         eval_callback = EvalCallback(eval_env, best_model_save_path=args.log_dir + args.exp_name, log_path=args.log_dir + args.exp_name, eval_freq=1000, deterministic=True, render=False)
         n_steps = 300
         model = PPO("MlpPolicy", train_env, batch_size=(num_cpu*300)//4, use_sde=False, n_steps=n_steps, n_epochs=10, gamma=.99, gae_lambda=.95, target_kl=.01, verbose=True,  clip_range=.1, ent_coef=.000585045, vf_coef=0.871923, max_grad_norm=10, learning_rate=1e-4, tensorboard_log = args.log_dir + 'tf/',policy_kwargs=policy_kwargs)
