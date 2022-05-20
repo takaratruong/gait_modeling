@@ -166,7 +166,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         self.gait_cycle_time = 1.0
         self.time_offset = np.random.uniform(0, self.gait_cycle_time)  # offsets gait cycle time
 
-        self.max_ep_time = 30
+        self.max_ep_time = 8
         self.total_reward = 0
 
         # impulse
@@ -178,6 +178,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
         my_mujoco_env.MujocoEnv.__init__(self, xml_file, 10)
         self.init_qvel[0] = 1
+        self.init_qvel[1:] = 0
 
     @property
     def healthy_reward(self):
@@ -200,6 +201,9 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         healthy_z = min_z < z < max_z
         healthy_angle = min_angle < angle < max_angle
         is_healthy = healthy_z and healthy_angle
+
+        if self.sim.data.time > self.max_ep_time:
+            is_healthy = False
 
         return is_healthy
 
@@ -291,6 +295,10 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         # if orient_reward < 0.6 or joint_reward < 0.6 or pos_reward < 0.6:
         #     done = True
         info = {}
+        if self.sim.data.time >= self.max_ep_time:
+            info["TimeLimit.truncated"] = True
+        else:
+            info["TimeLimit.truncated"] = False
         # print(orient_reward, joint_reward, pos_reward)
         return observation, reward, done, info
 
@@ -325,7 +333,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         qpos = init_pos_ref  # self.init_qpos + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq
         qvel = init_vel_ref  # self.init_qvel + self.np_random.uniform( low=noise_low, high=noise_high, size=self.model.nv)
 
-        self.set_state(qpos, qvel)
+        self.set_state(qpos, self.init_qvel)
         self.total_reward = 0
 
         observation = self._get_obs()
