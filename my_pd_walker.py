@@ -219,13 +219,18 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         return done
 
     def _get_obs(self):
-        position = self.sim.data.qpos.flat.copy()
-        velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
+        if self.get_phase() < 0.5:
+            position = self.sim.data.qpos.flat.copy()
+            velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
 
-        if self._exclude_current_positions_from_observation:
-            position = position[1:]
+            if self._exclude_current_positions_from_observation:
+                position = position[1:]
 
-        observation = np.concatenate((position, velocity / 10, np.array([self.get_phase()]))).ravel()
+            observation = np.concatenate((position, velocity / 10, np.array([self.get_phase()]))).ravel()
+
+        else:
+            observation = np.concatenate((self.sim.data.qpos[1:3], self.sim.data.qpos[6:9], self.sim.data.qpos[3:6], self.sim.data.qvel[0:3]/10,
+                self.sim.data.qvel[6:9]/10, self.sim.data.qvel[3:6]/10, np.array([self.get_phase() - 0.5])))
 
         return observation
 
@@ -237,14 +242,17 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
     def step(self, action):
         action = np.array(action.tolist())
-        joint_action =  action[0:6]
-        phase_action = (self.get_phase() + 0.2) % 1
-
+        if self.get_phase() < 0.5:
+            joint_action =  action[0:6].copy()
+        else:
+            joint_action = action[[3,4,5,0,1,2]].copy()
+        phase_action = (self.get_phase() + 0.02) % 1
+        
         ref = self.get_gait_ref(phase_action)  # get reference motion
-        joint_target = joint_action + ref[3:]  # add reference motion to action for joints
+        joint_target = joint_action + ref[3:]  # add reference motion to action for joint
 
         force = self.force if self.args.c_imp else self.get_rand_force()
-
+        
         for _ in range(self.frame_skip):
 
             joint_obs = self.sim.data.qpos[3:]
@@ -275,7 +283,7 @@ class PD_Walker2dEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         # ref = self.get_gait_ref(phase)
 
         joint_ref = ref[3:]
-        joint_obs = observation[2:8]
+        joint_obs = self.sim.data.qpos[3:9]
         joint_reward = np.exp(-2 * np.sum((joint_ref - joint_obs) ** 2))
 
         pos_ref = ref[0:2]
