@@ -80,7 +80,7 @@ class MujocoEnv(gym.Env):
     def _set_action_space(self):
         #bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
         #low, high = bounds.T
-        low = np.array([-1,-1,-1,-1,-1,-1,0]).astype('float32')
+        low = np.array([-1,-1,-1,-1,-1,-1,-1]).astype('float32')
         high = np.array([1,1,1,1,1,1,1]).astype('float32')
 
         self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)

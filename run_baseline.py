@@ -12,7 +12,7 @@ parser.add_argument('-time_steps', type=int, default=5e7)
 parser.add_argument('-imp', action='store_true')  # use random impulses
 parser.add_argument('-c_imp', action='store_true')  # use constant impulses
 
-parser.add_argument('-f', type=float, default=300)  # define force
+parser.add_argument('-f', type=float, default=200)  # define force
 parser.add_argument('-ft', action='store_true')
 parser.add_argument('-vis_ref', action='store_true')
 
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     # Train model
     if args.t or args.ft:
 
-        train_env = make_vec_env(lambda:env, n_envs=num_cpu, seed=0, vec_env_cls=DummyVecEnv)
+        train_env = make_vec_env(lambda:env, n_envs=num_cpu, seed=0, vec_env_cls=SubprocVecEnv)
         eval_env = make_vec_env(lambda:env, n_envs=1)
 
         eval_callback = EvalCallback(eval_env, best_model_save_path=args.log_dir + args.exp_name, log_path=args.log_dir + args.exp_name, eval_freq=1000, deterministic=True, render=False)
