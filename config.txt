@@ -2,14 +2,13 @@ exp_name = exp
 frame_skip = 22
 train_mode = standard
 train_env = base
-max_ep_time = 6.0
-num_epochs = 5
+max_ep_time = 10.0
 
-rand_perturbation = True
-perturbation_force = 50
-min_perturbation_force_mag = 10
+#rand_perturbation = True
+#perturbation_force = 50
+#min_perturbation_force_mag = 10
 
-phase_action_mag = 45
-orient_weight = .3
-joint_weight =.3
-pos_weight = .4
+phase_action_mag = 40
+orient_weight = .15
+joint_weight =.15
+pos_weight = .7
