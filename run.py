@@ -8,7 +8,6 @@ from stable_baselines3.common.callbacks import EvalCallback
 from stable_baselines3.common.env_util import make_vec_env
 from config_loader import load_args
 from utils import VideoCallback
-# Save a checkpoint every 1000 steps
 
 
 policy_kwargs = dict(log_std_init=-2.0, ortho_init=True, activation_fn=torch.nn.ReLU,
@@ -25,7 +24,7 @@ if __name__ == '__main__':
     train_env = make_vec_env(lambda: WalkerBase(args=args), n_envs=args.num_cpu, vec_env_cls=SubprocVecEnv)
 
     eval_callback = EvalCallback(train_env, best_model_save_path=args.log_dir + '/models/' + args.exp_name,
-                                 log_path=args.log_dir + args.exp_name,
+                                 log_path=args.log_dir + '/models/' + args.exp_name,
                                  eval_freq=max(args.eval_freq * args.num_cpu, 1),
                                  deterministic=True, render=False)
 
