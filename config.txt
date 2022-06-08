@@ -1,9 +1,12 @@
-exp_name = exp
+exp_name = remote_exp
 frame_skip = 22
 train_mode = standard
 train_env = base
 max_ep_time = 6.0
 num_epochs = 5
+num_cpu = 20
+
+vid_freq = 1000
 
 rand_perturbation = True
 perturbation_force = 50
