@@ -9,7 +9,6 @@ from stable_baselines3.common.env_util import make_vec_env
 from config_loader import load_args
 from utils import VideoCallback
 
-
 policy_kwargs = dict(log_std_init=-2.0, ortho_init=True, activation_fn=torch.nn.ReLU,
                      net_arch=[dict(pi=[128, 128], vf=[128, 128])])
 
@@ -46,7 +45,7 @@ if __name__ == '__main__':
     model = PPO("MlpPolicy", train_env, batch_size=(args.num_cpu * args.num_steps) // 4, use_sde=False,
                 n_steps=args.num_steps, n_epochs=args.num_epochs, gamma=.99, gae_lambda=.95, target_kl=.01,
                 verbose=True, clip_range=.1, ent_coef=.000585045, vf_coef=0.871923, max_grad_norm=10,
-                learning_rate=1e-4, tensorboard_log=args.log_dir + 'tf/', policy_kwargs=policy_kwargs,)
+                learning_rate=1e-4, tensorboard_log=args.log_dir + 'tf/', policy_kwargs=policy_kwargs,device='cpu')
 
     model.learn(total_timesteps=args.time_steps,  callback=[eval_callback, vid_callback], tb_log_name=args.exp_name)
 

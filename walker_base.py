@@ -68,6 +68,10 @@ class WalkerBase(my_mujoco_env.MujocoEnv, utils.EzPickle):
         self.impulse_delay = self.args.perturbation_delay # 3.5
         self.impulse_time_start = 0
 
+        self._max_episode_steps = self.args.num_steps #self.args.max_ep_steps
+        self._elapsed_steps = 0
+
+
         my_mujoco_env.MujocoEnv.__init__(self, xml_file, self.args.frame_skip)
         self.init_qvel[0] = 1
         self.init_qvel[1:] = 0
@@ -95,8 +99,8 @@ class WalkerBase(my_mujoco_env.MujocoEnv, utils.EzPickle):
         healthy_angle = min_angle < angle < max_angle
         is_healthy = healthy_z and healthy_angle
 
-        if self.sim.data.time > self.max_ep_time:
-            is_healthy = False
+        #if self.sim.data.time > self.max_ep_time:
+        #    is_healthy = False
         return is_healthy
 
     # For vec env
@@ -200,10 +204,14 @@ class WalkerBase(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
         done = self.done
         info = {}
-        if self.sim.data.time >= self.max_ep_time:
-            info["TimeLimit.truncated"] = True
-        else:
-            info["TimeLimit.truncated"] = False
+        #if self.sim.data.time >= self.max_ep_time:
+        #    info["TimeLimit.truncated"] = True
+        #else:
+        #    info["TimeLimit.truncated"] = False
+        self._elapsed_steps += 1
+        if self._elapsed_steps >= self._max_episode_steps:
+            info["TimeLimit.truncated"] = not done
+            done = True
 
         return observation, reward, done, info
 
@@ -228,6 +236,8 @@ class WalkerBase(my_mujoco_env.MujocoEnv, utils.EzPickle):
         return neg_force if np.random.rand() <= .5 else pos_force
 
     def reset_model(self):
+        self._elapsed_steps = 0
+
         # randomize starting phase alignment
         offset = int(np.random.randint(0, self._max_phase / 10) * 10)
 

@@ -27,6 +27,7 @@ p.add('--num_epochs', type=int, default=10)
 
 p.add('--frame_skip', type=int, default=20)
 p.add('--max_ep_time', type=float, default=10.0)
+p.add('--max_ep_steps', type=int, default=250) #to time *.002*fs
 
 # Policy Parameters
 p.add('--gait_policy', type=str)  # Experiment folder name defining the gait policy (loaded from results)
