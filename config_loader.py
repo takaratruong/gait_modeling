@@ -7,8 +7,8 @@ p.add('-n', '--exp_name', required=True)
 p.add('-c', '--my-config', required=True, is_config_file=True, help='config file path')
 
 p.add('--log_dir', type=str, default='results/')
-p.add('--eval_freq', type=int, default=100)
-p.add('--vid_freq', type=int, default=1000)
+p.add('--eval_freq', type=int, default=10)
+p.add('--vid_freq', type=int, default=10)
 
 """ Experiment Parameters """
 # Visualizing
@@ -19,7 +19,7 @@ p.add('--vis_ref', action='store_true')  # Visualize reference motion
 p.add('-t', '--train_mode', required=True, type=str)  # either "fine_tune" or "standard"
 p.add('-t_env', '--train_env', required=True, type=str)
 
-p.add('--num_cpu', type=int, default=20)
+p.add('--num_envs', type=int, default=20)
 p.add('--num_steps', type=int, default=300)
 p.add('--time_steps', type=int, default=10e8)
 p.add('--num_epochs', type=int, default=10)
@@ -27,7 +27,6 @@ p.add('--num_epochs', type=int, default=10)
 
 p.add('--frame_skip', type=int, default=20)
 p.add('--max_ep_time', type=float, default=10.0)
-p.add('--max_ep_steps', type=int, default=250) #to time *.002*fs
 
 # Policy Parameters
 p.add('--gait_policy', type=str)  # Experiment folder name defining the gait policy (loaded from results)
