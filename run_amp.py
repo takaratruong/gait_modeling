@@ -24,7 +24,7 @@ if __name__ == '__main__':
     eval_env = make_vec_env(lambda: AmpEnv(args=args), n_envs=1, vec_env_cls=DummyVecEnv)
 
     eval_callback = EvalCallback(eval_env, best_model_save_path=args.log_dir + args.exp_name, log_path=args.log_dir + 'models/' + args.exp_name, eval_freq=args.eval_freq * args.num_epochs * args.num_envs, deterministic=True, render=False)
-    disc_callback = UpdateDiscriminator()
+    disc_callback = UpdateDiscriminator(train_env)
 
     model = PPO("MlpPolicy", train_env, batch_size=(args.num_envs*args.num_steps)//4, use_sde=False, n_steps= args.num_steps, n_epochs=args.num_epochs, gamma=.99, gae_lambda=.95,
                 target_kl=.01, verbose=True,  clip_range=.1, ent_coef=.000585045, vf_coef=0.871923, max_grad_norm=10, learning_rate=1e-4,

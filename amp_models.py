@@ -2,7 +2,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 from stable_baselines3.common.callbacks import BaseCallback, sync_envs_normalization
-
+import numpy as np
+import random
 
 class Discriminator(nn.Module):
     def __init__(self, num_inputs, hidden_layer=(64, 64)):
@@ -28,38 +29,45 @@ class Discriminator(nn.Module):
 
 
 class UpdateDiscriminator(BaseCallback):
-    def __init__(self, batch_size=100, verbose=0):
+    def __init__(self, env, batch_size=200, verbose=0):
         super(UpdateDiscriminator, self).__init__(verbose)
         self.batch_size = batch_size
+        self.env = env
 
     def _on_step(self):
         pass
 
+    def sample_agent(self):
+        # rollout episodes then sample from it.
+        rollout = []
+        while len(rollout) < self.batch_size*2:
+            state = self.env.reset()
+
+            done = False
+            while not done:
+                action, _ = self.model.predict(state, deterministic=False)
+                next_state, _, done, _ = self.env.step(action)
+
+                rollout.append((state, next_state))
+                if len(rollout) >= self.batch_size*2:
+                    break
+
+                state = next_state
+        self.env.close()
+
+        rollout = np.array(rollout)
+        indices = np.random.choice(len(rollout), self.batch_size)
+
+        agent_batch = rollout[indices]
+        return agent_batch
+
+    def sample_prior(self):
+
+
     def _on_rollout_end(self):
+        sample_agent.
 
-        rollout = self.model.rollout_buffer.get(self.batch_size)
 
-        for i, x in enumerate(rollout):
-            print(i)
-            print(len(x[0]))
-            print(x[0])
-            print(len(x[1]))
-            print(x[1])
-            print()
 
-        print()
-        print(z)
 
-"""
 
-class UpdateDiscriminator(BaseCallback):
-    def __init__(self, env):
-        super(UpdateDiscriminator, self).__init__()
-        self.env = env
-        self.batch_size = 100
-
-    def _on_rollout_end(self):
-        pass
-        #print(self.rollout_buffer)
-        #print(self.model.rollout_buffer.get(self.batch_size))
-"""
