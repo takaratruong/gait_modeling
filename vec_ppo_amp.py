@@ -2,27 +2,23 @@ import argparse
 import sys
 import random
 import os
-
 os.environ["MKL_NUM_THREADS"] = "10"
 os.environ["NUMEXPR_NUM_THREADS"] = "10"
 os.environ["OMP_NUM_THREADS"] = "10"
 import numpy as np
 import scipy
-
 from params import Params
-
 import pickle
 import time
-
 import statistics
 import matplotlib
-
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from operator import add, sub
 
 import pickle
 
+NUM_ENV = 4
 
 class PPOStorage:
     def __init__(self, num_inputs, num_outputs, max_size=64000):
@@ -37,16 +33,11 @@ class PPOStorage:
         self.counter = 0
         self.sample_counter = 0
         self.max_samples = max_size
-
     def sample(self, batch_size):
         idx = torch.randint(self.counter, (batch_size,), device=device)
-        return self.states[idx, :], self.actions[idx, :], self.next_states[idx, :], self.rewards[idx], self.q_values[
-                                                                                                       idx, :], \
-               self.log_probs[idx]
-
+        return self.states[idx, :], self.actions[idx, :], self.next_states[idx, :], self.rewards[idx], self.q_values[idx, :], self.log_probs[idx]
     def clear(self):
         self.counter = 0
-
     def push(self, states, actions, next_states, rewards, q_values, log_probs, size):
         self.states[self.counter:self.counter + size, :] = states.detach().clone()
         self.actions[self.counter:self.counter + size, :] = actions.detach().clone()
@@ -56,26 +47,26 @@ class PPOStorage:
         self.log_probs[self.counter:self.counter + size] = log_probs.detach().clone()
         self.counter += size
 
+    def discriminator_sample(self, batch_size):
+        if self.sample_counter == 0 or self.sample_counter == self.max_samples:
+            self.permute()
+        self.sample_counter %= self.max_samples
+        self.sample_counter += batch_size
+        return self.states[self.sample_counter - batch_size:self.sample_counter, :], self.next_states[self.sample_counter - batch_size:self.sample_counter, :]
+
     def critic_sample(self, batch_size):
         if self.sample_counter == 0 or self.sample_counter == self.max_samples:
             self.permute()
         self.sample_counter %= self.max_samples
         self.sample_counter += batch_size
-        return self.states[self.sample_counter - batch_size:self.sample_counter, :], self.q_values[
-                                                                                     self.sample_counter - batch_size:self.sample_counter,
-                                                                                     :]
+        return self.states[self.sample_counter - batch_size:self.sample_counter, :], self.q_values[self.sample_counter - batch_size:self.sample_counter,:]
 
     def actor_sample(self, batch_size):
         if self.sample_counter == 0 or self.sample_counter == self.max_samples:
             self.permute()
         self.sample_counter %= self.max_samples
         self.sample_counter += batch_size
-        return self.states[self.sample_counter - batch_size:self.sample_counter, :], self.actions[
-                                                                                     self.sample_counter - batch_size:self.sample_counter,
-                                                                                     :], self.q_values[
-                                                                                         self.sample_counter - batch_size:self.sample_counter,
-                                                                                         :], self.log_probs[
-                                                                                             self.sample_counter - batch_size:self.sample_counter]
+        return self.states[self.sample_counter - batch_size:self.sample_counter, :], self.actions[self.sample_counter - batch_size:self.sample_counter, :], self.q_values[self.sample_counter - batch_size:self.sample_counter, :], self.log_probs[self.sample_counter - batch_size:self.sample_counter]
 
     def permute(self):
         permuted_index = torch.randperm(self.max_samples)
@@ -96,6 +87,7 @@ class RL(object):
         self.params = Params()
         self.Net = ActorCriticNet
         self.model = self.Net(self.num_inputs, self.num_outputs, self.hidden_layer)
+        self.discriminator = Discriminator(10 * 2, [128, 128]) #<---Dsicriminator initialization FIX
         self.model.share_memory()
         self.test_mean = []
         self.test_std = []
@@ -117,9 +109,11 @@ class RL(object):
         self.best_validation = 1.0
         self.current_best_validation = 1.0
 
+
         self.gpu_model = self.Net(self.num_inputs, self.num_outputs, self.hidden_layer)
         self.gpu_model.to(device)
         self.model_old = self.Net(self.num_inputs, self.num_outputs, self.hidden_layer).to(device)
+        self.discriminator.to(device)
 
         self.base_controller = None
         self.base_policy = None
@@ -229,7 +223,7 @@ class RL(object):
         calculate_done2 = False
         self.total_rewards = []
         start = time.time()
-        state = torch.from_numpy(state).to(device).type(torch.cuda.FloatTensor)
+        state = torch.from_numpy(state).to(device).type(torch.cuda.FloatTensor) #DIFF
         while samples < num_samples:
             with torch.no_grad():
                 action, mean_action = self.gpu_model.sample_actions(state)
@@ -238,17 +232,22 @@ class RL(object):
             states.append(state.clone())
             actions.append(action.clone())
             log_probs.append(log_prob.clone())
-            state, reward, done, _ = self.env.step(action.cpu().numpy())
+            next_state, reward, done, _ = self.env.step(action)
 
-            state = torch.from_numpy(state).to(device).type(torch.cuda.FloatTensor)
+            # rewards.append(reward.clone())
+            next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
             reward = torch.from_numpy(reward).to(device).type(torch.cuda.FloatTensor)
             done = torch.from_numpy(done).to(device).type(torch.cuda.IntTensor)
 
-            rewards.append(reward.clone())
-
             dones.append(done.clone())
 
-            next_states.append(state.clone())
+            next_states.append(next_state.clone())
+
+            reward = self.discriminator.compute_disc_reward(state[:, 0:10], next_state[:, 0:10]) * 0.0 + 1. * reward
+
+            rewards.append(reward.clone())
+
+            state = next_state.clone()
 
             samples += 1
 
@@ -264,31 +263,54 @@ class RL(object):
             counter -= 1
             # print(len(q_values))
         for i in range(num_samples):
-            self.storage.push(states[i], actions[i], next_states[i], rewards[i], q_values[i], log_probs[i],
-                              self.num_envs)
+            self.storage.push(states[i], actions[i], next_states[i], rewards[i], q_values[i], log_probs[i], self.num_envs)
         self.total_rewards = self.env.get_total_reward()
         print("processing time", time.time() - start)
 
-    def fresh_update(self):
-        fresh_model = self.Net(self.num_inputs, self.num_outputs, self.hidden_layer).to(device)
-        fresh_model.train()
-        optimizer = optim.Adam(fresh_model.parameters(), lr=3e-4)
-        storage = self.storage
-        for k in range(1000):
-            batch_states, batch_actions, batch_q_values, batch_log_probs = storage.actor_sample(20000 // 4)
-            loss_value = (fresh_model.get_value(batch_states) - self.gpu_model.get_value(batch_states)) ** 2
-            loss_value = loss_value.mean()
-            loss_action = (fresh_model.sample_best_actions(batch_states) - self.gpu_model.sample_best_actions(
-                batch_states)) ** 2
-            loss_action = loss_action.mean()
-            loss_total = loss_value + 100 * loss_action
-            print("action loss", loss_action)
-            print("value loss", loss_value)
-            optimizer.zero_grad()
-            loss_total.backward()
-            optimizer.step()
-        self.gpu_model.load_state_dict(fresh_model.state_dict())
+    def load_motion_data(self):
+        self.motion_data = np.loadtxt("2d_walking.txt")
+        self.motion_data[:, 3:5] *= -1
+        self.motion_data[:, 6:8] *= -1
+        self.motion_data[:, 1] += 1.5
 
+    def sample_motion_data(self, phase):
+        motion_index = (phase * 10 / 50).astype(int)
+        residual = (phase - motion_index * 5).astype(int)
+        motion1 = self.motion_data[motion_index]
+        motion2 = self.motion_data[motion_index + 1]
+        residual = np.expand_dims(residual, axis=1)
+        motion = motion1 * (5 - residual) / 5.0 + motion2 * residual / 5.0
+        cos_phase = np.expand_dims(np.cos(phase * 3.1415 * 2 / 50), axis=1)
+        sin_phase = np.expand_dims(np.sin(phase * 3.1415 * 2 / 50), axis=1)
+        return torch.from_numpy(np.concatenate((motion[:, 1:9], sin_phase, cos_phase), axis=1).astype(np.float32)).to(device)
+
+    def update_discriminator(self, batch_size, num_epoch):
+        self.discriminator.train()
+        optimizer = optim.Adam(self.discriminator.parameters(), lr=self.lr)
+
+        for k in range(num_epoch):
+            batch_states, batch_next_states = self.storage.discriminator_sample(batch_size)
+            policy_d = self.discriminator.compute_disc(batch_states[:, 0:10], batch_next_states[:, 0:10])
+            policy_loss = (policy_d + torch.ones(policy_d.size(), device=device)) ** 2
+            policy_loss = policy_loss.mean()
+
+            phase = np.random.choice(45, batch_size)
+            batch_expert_states = self.sample_motion_data(phase)
+            batch_expert_next_states = self.sample_motion_data(phase + 1)
+            expert_d = self.discriminator.compute_disc(batch_expert_states, batch_expert_next_states)
+            expert_loss = (expert_d - torch.ones(expert_d.size(), device=device)) ** 2
+            expert_loss = expert_loss.mean()
+
+            grad_penalty = self.discriminator.grad_penalty(batch_expert_states, batch_expert_next_states)
+
+            print(policy_loss, expert_loss, grad_penalty)
+
+            total_loss = policy_loss + expert_loss + 5 * grad_penalty
+            optimizer.zero_grad()
+            total_loss.backward()
+            optimizer.step()
+
+    # removed fresh update
     def update_critic(self, batch_size, num_epoch):
         self.gpu_model.train()
         optimizer = optim.Adam(self.gpu_model.parameters(), lr=10 * self.lr)
@@ -307,6 +329,7 @@ class RL(object):
             optimizer.zero_grad()
             loss_value.backward()
             optimizer.step()
+
 
     def update_actor(self, batch_size, num_epoch):
         self.gpu_model.train()
@@ -354,15 +377,14 @@ class RL(object):
             pickle.dump(self.shared_obs_stats, output, pickle.HIGHEST_PROTOCOL)
 
     def save_statistics(self, filename):
-        statistics = [self.time_passed, self.num_samples, self.test_mean, self.test_std, self.noisy_test_mean,
-                      self.noisy_test_std]
+        statistics = [self.time_passed, self.num_samples, self.test_mean, self.test_std, self.noisy_test_mean, self.noisy_test_std]
         with open(filename, 'wb') as output:
             pickle.dump(statistics, output, pickle.HIGHEST_PROTOCOL)
 
     def collect_samples_multithread(self):
         # queue = Queue.Queue()
         import time
-        self.num_envs = 20
+        self.num_envs = NUM_ENV
         self.start = time.time()
         self.lr = 1e-3
         self.weight = 10
@@ -373,15 +395,15 @@ class RL(object):
         total_thread = 0
         max_samples = 6000
         self.storage = PPOStorage(self.num_inputs, self.num_outputs, max_size=max_samples)
-        seeds = [
-            i * 100 for i in range(num_threads)
-        ]
+        seeds = [i * 100 for i in range(num_threads)]
+
         self.explore_noise = mp.Value("f", -2.5)
         self.base_noise = np.ones(self.num_outputs)
         noise = self.base_noise * self.explore_noise.value
         self.model.set_noise(noise)
         self.gpu_model.set_noise(noise)
         self.env.reset()
+        self.load_motion_data()
         for iterations in range(100): #200000
             iteration_start = time.time()
             print(self.model_name)
@@ -391,6 +413,7 @@ class RL(object):
 
             self.update_critic(max_samples // 4, 40)
             self.update_actor(max_samples // 4, 40)
+            self.update_discriminator(max_samples // 4, 40) #commented out
             self.storage.clear()
 
             if (iterations + 1) % 100 == 0:
@@ -449,7 +472,7 @@ if __name__ == '__main__':
     import torch.nn.functional as F
     from torch.autograd import Variable
     import torch.utils.data
-    from model import ActorCriticNet
+    from model import ActorCriticNet, Discriminator
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -462,7 +485,7 @@ if __name__ == '__main__':
 
     # create environment from the configuration file
     args = parser.parse_args()
-    num_cpu = 20
+    num_cpu = NUM_ENV
     env = PD_Walker2dEnv(args=args)
     train_env = make_vec_env(lambda: env, n_envs=num_cpu, seed=0, vec_env_cls=SubprocVecEnv)
 
@@ -471,10 +494,9 @@ if __name__ == '__main__':
 
     ppo.base_dim = ppo.num_inputs
 
-    ppo.model_name = "stats/test/"
+    ppo.model_name = "stats/test_amp/"
     ppo.max_reward.value = 1  # 50
 
-    # ppo.save_model(ppo.model_name)
     training_start = time.time()
     ppo.collect_samples_multithread()
     print("training time", time.time() - training_start)

@@ -46,7 +46,7 @@ if __name__ == '__main__':
    num_inputs = env.observation_space.shape[0]
    num_outputs = env.action_space.shape[0]
    model = ActorCriticNet(num_inputs, num_outputs, [128, 128])
-   model.load_state_dict(torch.load("stats/test/iter1999.pt"))
+   model.load_state_dict(torch.load("stats/test/final.pt"))
    model.cuda()
 
    env.reset()
