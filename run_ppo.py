@@ -14,7 +14,6 @@ if __name__ == '__main__':
 
     args = load_args()
 
-
     run = wandb.init(project="gait-modeling", config=args, name=args.exp_name, sync_tensorboard=True, monitor_gym=True, save_code=True, dir=args.log_dir)
 
     train_env, eval_env, vid_env = load_envs(args, run)
