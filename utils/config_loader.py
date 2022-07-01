@@ -17,7 +17,8 @@ p.add('--vis_ref', action='store_true')  # Visualize reference motion
 
 # Training parameters
 p.add('-t', '--train_mode', required=True, type=str)  # either "fine_tune" or "standard"
-p.add('-t_env', '--train_env', required=True, type=str)
+p.add('-env', '--environment', required=True, type=str)
+p.add('--fixed_gait_policy_path', type=str, default='results/models/walk/best_model')
 
 p.add('--num_envs', type=int, default=20)
 p.add('--num_steps', type=int, default=300)

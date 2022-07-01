@@ -1,11 +1,10 @@
 import numpy as np
-
 from gym import utils
-import my_mujoco_env
-
 from scipy.interpolate import interp1d
-import torch
 import ipdb
+import os
+
+import environments.walker2d.walker2d_mujoco_env as walker2d_mujoco_env
 
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": 2,
@@ -14,7 +13,7 @@ DEFAULT_CAMERA_CONFIG = {
     "elevation": -20.0,
 }
 
-class AmpEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
+class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
     def __init__(
             self,
@@ -49,14 +48,13 @@ class AmpEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         # My variables:
         self.args = args
 
-        self.discriminator = args.discriminator
-
         # PD
         self.p_gain = 100
         self.d_gain = 10
 
         # Interpolation of gait reference wrt phase.
-        ref = np.loadtxt('2d_walking.txt')
+        ref = np.loadtxt('environments/walker2d/2d_walking.txt')
+
         self.gait_cycle_time = 1
         self.gait_ref = interp1d(np.arange(0, 11) / 10, ref, axis=0)
         self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), ref))/.1, axis=0), axis=0)
@@ -78,7 +76,7 @@ class AmpEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
         self.frame_skip = self.args.frame_skip
 
-        my_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
+        walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
         self.init_qvel[0] = 1
         self.init_qvel[1:] = 0
 
@@ -153,8 +151,6 @@ class AmpEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
         ref = self.cntr2ref(self.sim_cntr + self.frame_skip)
         joint_target = joint_action + ref[3:]  # add action to joint ref to create final joint target
 
-        old_observation = self._get_obs()
-
         for _ in range(self.frame_skip):
             joint_obs = self.sim.data.qpos[3:]
             joint_vel_obs = self.sim.data.qvel[3:]
@@ -164,7 +160,7 @@ class AmpEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
 
             torque = self.p_gain * error - self.d_gain * error_der
 
-            self.do_simulation(torque / 100, 1)
+            self.do_simulation(torque/100, 1)
             self.sim_cntr += 1
 
             # Apply force for specified duration
@@ -177,20 +173,33 @@ class AmpEnv(my_mujoco_env.MujocoEnv, utils.EzPickle):
                     self.impulse_time_start = self.data.time
                     self.force = self.args.perturbation_force if self.args.const_perturbation else self.get_rand_force()
 
-        new_observation = self._get_obs()
+        observation = self._get_obs()
 
-        reward = self.discriminator.reward(torch.tensor(old_observation).float(), torch.tensor(new_observation).float())
-        reward = reward.numpy()
+        joint_ref = ref[3:]
+        joint_obs = self.sim.data.qpos[3:9]
+        joint_reward = np.exp(-2 * np.sum((joint_ref - joint_obs) ** 2))
+
+        pos_ref = ref[0:2]
+        pos = self.sim.data.qpos[0:2]
+        pos_reward = 10 * (1-self.sim.data.qvel[0])**2 + (pos_ref[1] - pos[1] ) ** 2
+        pos_reward = np.exp(-pos_reward)
+
+        orient_ref = ref[2]
+        orient_obs = observation[1]
+        orient_reward = 2 * ((orient_ref - orient_obs) ** 2) + 5 * (self.sim.data.qvel[2] ** 2)
+        orient_reward = np.exp(-orient_reward)
+
+        reward = 0.3*orient_reward+0.4*joint_reward+0.3*pos_reward
 
         done = self.done
         info = {}
 
-        self.elapsed_steps += 1
+        self.elapsed_steps+=1
         if self.elapsed_steps >= self.max_ep_steps:
             info["TimeLimit.truncated"] = not done
             done = True
 
-        return new_observation, reward, done, info
+        return observation, reward, done, info
 
     def reset_model(self):
         self.elapsed_steps = 0

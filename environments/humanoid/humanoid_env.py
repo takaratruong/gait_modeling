@@ -1,7 +1,7 @@
 import numpy as np
 
 from gym import utils
-import mujoco_env_humanoid
+import environments.humanoid.humanoid_mujoco_env as mujoco_env_humanoid
 import ipdb
 from scipy.interpolate import interp1d
 

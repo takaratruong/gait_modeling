@@ -1,5 +1,4 @@
 from stable_baselines3.common.callbacks import BaseCallback, sync_envs_normalization
-from stable_baselines3.common.callbacks import CheckpointCallback
 
 class VideoCallback(BaseCallback):
     def __init__(self, vid_env, eval_freq, verbose=0):

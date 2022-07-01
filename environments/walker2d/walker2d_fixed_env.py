@@ -1,9 +1,8 @@
 import numpy as np
-from walker_base import WalkerBase
+from environments.walker2d.walker2d_env import WalkerEnv
 import ipdb
 
-
-class WalkerFixed(WalkerBase):
+class WalkerFixedEnv(WalkerEnv):
     def step(self, action):
         new_action = np.array(action.tolist())
 
