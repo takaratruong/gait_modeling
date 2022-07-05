@@ -424,7 +424,7 @@ class RL(object):
         self.time_passed = 0
         score_counter = 0
         total_thread = 0
-        max_samples = 6000
+        max_samples = 4*300 #6000
         self.storage = PPOStorage(self.num_inputs, self.num_outputs, max_size=max_samples)
         seeds = [i * 100 for i in range(num_threads)]
 
@@ -435,7 +435,7 @@ class RL(object):
         self.gpu_model.set_noise(noise)
         self.env.reset()
         self.load_motion_data()
-        for iterations in range(1000): #200000
+        for iterations in range(200000): #200000
             print("iteration: ", iterations)
             iteration_start = time.time()
             while self.storage.counter < max_samples:
@@ -447,7 +447,7 @@ class RL(object):
             disc_loss = self.update_discriminator(max_samples // 4, 40) #commented out
             self.storage.clear()
 
-            if (iterations +1) % 100 == 0:
+            if (iterations) % 50 == 0:
                 self.vid_callback.save_video(self.model)
 
             if (iterations) % 1 == 0:
@@ -457,7 +457,6 @@ class RL(object):
                 reward_mean, reward_std = self.run_test_with_noise(num_test=2)
                 #print(reward_mean, reward_std)
                 wandb.log({"eval/reward_mean": reward_mean, "eval/reward_high": reward_mean+ reward_std, "eval/reward_low": reward_mean-reward_std}, )
-
 
             #print("update policy time", time.time() - start)
             print("iteration time", iterations, time.time() - iteration_start)
