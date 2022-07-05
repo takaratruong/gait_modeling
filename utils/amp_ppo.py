@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import time
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
 import statistics
 import pickle
@@ -11,8 +11,8 @@ import os
 from scipy.interpolate import interp1d
 
 
-import matplotlib
-matplotlib.use('TkAgg')
+#import matplotlib
+#matplotlib.use('TkAgg')
 
 from utils.amp_models import ActorCriticNet, Discriminator
 
@@ -98,10 +98,10 @@ class RL(object):
 
         self.noisy_test_mean = []
         self.noisy_test_std = []
-        self.fig = plt.figure()
+        #self.fig = plt.figure()
         # self.fig2 = plt.figure()
         self.lr = self.params.lr
-        plt.show(block=False)
+        #plt.show(block=False)
 
         self.test_list = []
         self.noisy_test_list = []
@@ -178,7 +178,7 @@ class RL(object):
 
     def plot_statistics(self):
 
-        plt.clf()
+        #plt.clf()
         ax = self.fig.add_subplot(121)
         # ax2 = self.fig.add_subplot(122)
         low = []
@@ -192,14 +192,14 @@ class RL(object):
             noisy_low.append(self.noisy_test_mean[i] - self.noisy_test_std[i])
             noisy_high.append(self.noisy_test_mean[i] + self.noisy_test_std[i])
             index.append(i)
-        plt.xlabel('iterations')
-        plt.ylabel('average rewards')
+        #plt.xlabel('iterations')
+        #plt.ylabel('average rewards')
         # ax.plot(self.test_mean, 'b')
         ax.plot(self.noisy_test_mean, 'g')
         # ax.fill_between(index, low, high, color='cyan')
         ax.fill_between(index, noisy_low, noisy_high, color='r')
         # ax.plot(map(sub, test_mean, test_std))
-        self.fig.canvas.draw()
+        #self.fig.canvas.draw()
 
         return self.noisy_test_mean[-1], noisy_low[-1], noisy_high[-1]
         # plt.savefig("test.png")
