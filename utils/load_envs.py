@@ -6,6 +6,7 @@ from environments.walker2d.walker2d_env import WalkerEnv
 from environments.walker2d.walker2d_fixed_env import WalkerFixedEnv
 from environments.humanoid.humanoid_env import HumanoidEnv
 
+
 def load_envs(args, run):
     train_env, eval_env, vid_env = None, None, None
 
@@ -28,3 +29,4 @@ def load_envs(args, run):
         vid_env = VecVideoRecorder(make_vec_env(lambda: HumanoidEnv(args=args), n_envs=1), args.log_dir + f"videos/{run.id}", record_video_trigger=lambda x: x == 0)
 
     return train_env, eval_env, vid_env
+

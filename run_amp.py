@@ -1,33 +1,34 @@
-from stable_baselines3.common.vec_env import VecVideoRecorder
+import random
+import numpy as np
+import torch.utils.data
 import wandb
-from stable_baselines3 import PPO
-import torch
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-from stable_baselines3.common.callbacks import EvalCallback
+from utils.config_loader import load_args
+from utils.amp_ppo import RL
+from environments.walker2d.walker2d_env import WalkerEnv
+from utils.video_callback import AMPVideoCallback
+
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecVideoRecorder
 from stable_baselines3.common.env_util import make_vec_env
-from config_loader import load_args
-from utils import VideoCallback
-from amp_models import UpdateDiscriminator
-from amp_models import Discriminator
-from amp_env import AmpEnv
-
-
-policy_kwargs = dict(log_std_init=-2.0, ortho_init=True, activation_fn=torch.nn.ReLU,
-                     net_arch=[dict(pi=[128, 128], vf=[128, 128])])
-
 
 if __name__ == '__main__':
+
+    # set seed
+    seed = 2
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    np.random.seed(seed)
+    torch.set_num_threads(1)
+
     args = load_args()
-    args.discriminator = Discriminator(num_inputs=36)
+    run = wandb.init(project="amp", config=args, name=args.exp_name, monitor_gym=True, dir=args.log_dir)
 
-    train_env = make_vec_env(lambda: AmpEnv(args=args), n_envs=1, seed=0, vec_env_cls=DummyVecEnv)
-    eval_env = make_vec_env(lambda: AmpEnv(args=args), n_envs=1, vec_env_cls=DummyVecEnv)
+    train_env = make_vec_env(lambda: WalkerEnv(args=args), n_envs=args.num_envs, seed=0, vec_env_cls=SubprocVecEnv)
 
-    eval_callback = EvalCallback(eval_env, best_model_save_path=args.log_dir + args.exp_name, log_path=args.log_dir + 'models/' + args.exp_name, eval_freq=args.eval_freq * args.num_epochs * args.num_envs, deterministic=True, render=False)
-    disc_callback = UpdateDiscriminator(train_env)
+    vid_env = VecVideoRecorder(make_vec_env(lambda: WalkerEnv(args=args), n_envs=1), args.log_dir + f"videos/{run.id}", record_video_trigger=lambda x: x == 0)
+    vid_callback = AMPVideoCallback(vid_env)
 
-    model = PPO("MlpPolicy", train_env, batch_size=(args.num_envs*args.num_steps)//4, use_sde=False, n_steps= args.num_steps, n_epochs=args.num_epochs, gamma=.99, gae_lambda=.95,
-                target_kl=.01, verbose=True,  clip_range=.1, ent_coef=.000585045, vf_coef=0.871923, max_grad_norm=10, learning_rate=1e-4,
-                tensorboard_log = args.log_dir + 'tf/',policy_kwargs=policy_kwargs)
-    model.learn(total_timesteps=args.time_steps, callback=[eval_callback, disc_callback], tb_log_name=args.exp_name)
+    ppo = RL(train_env, vid_callback, args, [128, 128])
+
+    ppo.collect_samples_multithread()
 

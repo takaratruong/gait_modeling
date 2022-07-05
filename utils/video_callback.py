@@ -1,4 +1,5 @@
-from stable_baselines3.common.callbacks import BaseCallback, sync_envs_normalization
+from stable_baselines3.common.callbacks import BaseCallback
+import torch
 
 class VideoCallback(BaseCallback):
     def __init__(self, vid_env, eval_freq, verbose=0):
@@ -15,4 +16,21 @@ class VideoCallback(BaseCallback):
                     obs, _, done, _ = self.vid_env.step(action)
 
             self.vid_env.close()
+        return True
+
+
+class AMPVideoCallback():
+    def __init__(self, vid_env):
+        self.vid_env = vid_env
+
+    def save_video(self, model):
+        for _ in range(4):
+            obs = self.vid_env.reset()
+            done = False
+            while not done:
+                action =  model.sample_best_actions(torch.tensor(obs).float()).detach().numpy()
+                obs, _, done, _ = self.vid_env.step(action)
+
+        self.vid_env.close()
+
         return True

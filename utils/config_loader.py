@@ -1,4 +1,5 @@
 import configargparse
+import torch
 
 p = configargparse.ArgParser()
 
@@ -21,7 +22,7 @@ p.add('-env', '--environment', required=True, type=str)
 p.add('--fixed_gait_policy_path', type=str, default='results/models/walk/best_model')
 
 p.add('--num_envs', type=int, default=20)
-p.add('--num_steps', type=int, default=300)
+p.add('--num_steps', type=int, default=2048) # change later for amp
 p.add('--time_steps', type=int, default=10e8)
 p.add('--num_epochs', type=int, default=10)
 
@@ -47,6 +48,22 @@ p.add('--orient_weight', type=float, default=.3)
 p.add('--joint_weight', type=float, default=.4)
 p.add('--pos_weight', type=float, default=.3)
 
+
+### FOR AMP ###
+p.add('-lr', type=float, default=1e-3)
+p.add('-gamma', type=float, default=.99)
+p.add('-gae_param', type=float, default=.95)
+p.add('-clip', type=float, default=.2)
+p.add('-ent_coeff', type=float, default=0)
+p.add('-num_epoch', type=int, default=32) # <--edit later for amp
+p.add('-time_horizon', type=int, default=200000)
+p.add('-max_episode_length', type=int, default=2048)
+p.add('-seed', type=int, default=1)
+p.add('-min_episode', type=int, default=5)
+
+# not part of configargparse
+POLICY_KWARGS = dict(log_std_init=-2.0, ortho_init=True, activation_fn=torch.nn.ReLU,
+                     net_arch=[dict(pi=[128, 128], vf=[128, 128])])
 
 def load_args():
     return p.parse_args()

@@ -76,6 +76,9 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
         self.frame_skip = self.args.frame_skip
 
+        # for amp
+        self.total_reward = 0
+
         walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
         self.init_qvel[0] = 1
         self.init_qvel[1:] = 0
@@ -101,6 +104,7 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
     def _get_obs(self):
         if self.phase < 0.5:
             position = self.sim.data.qpos.flat.copy()
+            #ipdb.set_trace()
             velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
 
             if self._exclude_current_positions_from_observation:
@@ -191,6 +195,9 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
         reward = 0.3*orient_reward+0.4*joint_reward+0.3*pos_reward
 
+        #for amp
+        self.total_reward += reward
+
         done = self.done
         info = {}
 
@@ -211,6 +218,8 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         self.impulse_time_start = self.data.time + .001
 
         self.set_state(qpos, self.init_qvel)
+
+        #for amp
         self.total_reward = 0
 
         observation = self._get_obs()
@@ -222,3 +231,13 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
                 getattr(self.viewer.cam, key)[:] = value
             else:
                 setattr(self.viewer.cam, key, value)
+
+    # for amp
+    def reset_time_limit(self):
+        if self.sim.data.time > self.max_ep_time:
+            return self.reset()
+        else:
+            return self._get_obs()
+
+    def get_total_reward(self):
+        return self.total_reward
