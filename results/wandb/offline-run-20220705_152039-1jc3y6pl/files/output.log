@@ -1,0 +1,45 @@
+8.689967607979951e-08 0.32857987057680565 5.01364543307188e-11
+1.357224883632738e-31 0.2686968635931033 3.198697288196947e-14
+4.1735484305027957e-16 0.10440744595719278 1.5787806632812178e-19
+0.8049481849631938 0.02309030349742703 4.437106716333211e-08
+1.6143036768184102e-06 0.014738767319390049 0.00025284185590399916
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+iteration:  0
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+0.999172763257789 0.9207689231858833 0.4168112776334698
+0.003688189754408686 0.8221751671671605 0.6909883893713568
+0.888788716388544 0.9444333251314063 0.9981589499380958
+0.20954553828098604 0.9743545092344498 0.472878657574065
+> /home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py(249)collect_samples_vec()
+    248             # rewards.append(reward.clone())
+--> 249             next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+    250             reward = torch.from_numpy(reward).to(device).type(torch.cuda.FloatTensor)
+[?2004h[?1l[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lx[?7h[?12l[?25h[?25l[?7li[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7l([?7h[?12l[?25h[?25l[?7l)[?7h[?12l[?ipdb> exit()
+[?7h[?12l[?25h[?2004l
+Traceback (most recent call last):
+  File "run_amp.py", line 33, in <module>
+    ppo.collect_samples_multithread()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 445, in collect_samples_multithread
+    self.collect_samples_vec(300, noise=noise)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit
+If you suspect this is an IPython 8.3.0 bug, please report it at:
+    https://github.com/ipython/ipython/issues
+or send an email to the mailing list at ipython-dev@python.org
+You can print a more detailed traceback right now with "%tb", or use "%debug"
+to interactively debug it.
+Extra-detailed tracebacks for bug-reporting purposes can be enabled via:
+    %config Application.verbose_crash=True

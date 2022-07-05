@@ -1,0 +1,16 @@
+iteration:  0
+Found 3 GPUs for rendering. Using device 0.
+Traceback (most recent call last):
+  File "run_amp.py", line 33, in <module>
+    ppo.collect_samples_multithread()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 454, in collect_samples_multithread
+    self.vid_callback.save_video(self.gpu_model)
+  File "/home/zhaoming/Documents/gait_modeling/utils/video_callback.py", line 32, in save_video
+    action =  model.sample_best_actions(torch.tensor(obs).float()).detach().numpy()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_models.py", line 77, in sample_best_actions
+    x = F.relu(self.p_fcs[0](inputs))
+  File "/home/zhaoming/Documents/push_recovery_env/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1110, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/zhaoming/Documents/push_recovery_env/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 103, in forward
+    return F.linear(input, self.weight, self.bias)
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu! (when checking argument for argument mat1 in method wrapper_addmm)

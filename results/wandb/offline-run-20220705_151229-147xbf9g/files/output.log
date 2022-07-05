@@ -1,0 +1,74 @@
+iteration:  0
+> /home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py(249)collect_samples_vec()
+    248             # rewards.append(reward.clone())
+--> 249             next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+    250             reward = torch.from_numpy(reward).to(device).type(torch.cuda.FloatTensor)
+[?2004h[?1l[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lr[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lw[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lr[?7h[?12l[?25h[?25l[?7ld[?7h[?12l[?ipdb> reward
+[?7h[?12l[?25h[?2004larray([0.74475075, 0.69741885, 0.65746726, 0.45455465])
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lr[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7ls[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7ln[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lx[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7l_[?7h[?12l[?25h[?25l[?7ls[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7le[?7h[?1ipdb> next_state
+[?7h[?12l[?25h[?2004larray([[ 1.14581603e+00,  4.71009218e-03,  5.31080719e-01,
+        -4.21362087e-01, -1.82594786e-02, -2.05676641e-01,
+        -7.22958478e-01,  9.35749824e-02,  7.29175766e-02,
+        -7.49766900e-03, -2.64839148e-02,  4.85899212e-02,
+        -2.45988256e-01, -7.47233566e-02,  5.92834658e-02,
+        -1.63308882e-01, -6.59276563e-02,  6.00000000e-02],
+       [ 1.16420933e+00,  1.39687204e-02,  4.56443272e-01,
+        -5.11753687e-01,  6.87755710e-02,  2.07518277e-02,
+        -1.14232474e+00,  1.28045446e-01,  8.01911858e-02,
+         1.85279719e-02,  4.27217747e-02, -4.30399054e-02,
+         1.65130272e-02,  6.91455184e-02,  1.21188715e-01,
+         2.04088118e-03,  6.94938160e-02,  1.54000000e-01],
+       [ 1.19941434e+00,  3.71646887e-02,  1.90290797e-01,
+        -2.93189708e-01,  1.40649532e-01,  2.35136748e-01,
+        -1.29853844e+00,  1.19880350e-01,  1.00983569e-01,
+         7.69021173e-04,  1.03824892e-01,  5.99834101e-03,
+         3.03610209e-02,  6.92475017e-02,  2.01663723e-01,
+        -9.97375904e-02,  7.06415440e-02,  2.36000000e-01],
+       [ 1.14512499e+00, -1.22699966e-04,  5.39288799e-01,
+        -4.96571390e-01,  1.38806522e-02, -1.11552162e-01,
+        -9.34049893e-01,  7.36719663e-02,  5.35695210e-02,
+        -1.40368206e-02, -5.96921794e-02,  1.49417633e-02,
+        -2.33933933e-01,  1.49246809e-02,  1.44106546e-01,
+        -3.13326921e-01, -6.56482836e-02,  1.04000000e-01]])
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lc[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7li[?7h[?12l[?25h[?25l[?7lo[?7h[?12l[?25h[?25l[?7ln[?7h[?12l[?ipdb> action
+[?7h[?12l[?25h[?2004ltensor([[ 0.0158, -0.0229, -0.0078,  0.0391,  0.0155, -0.0008, -0.2014],
+        [-0.0196,  0.0137, -0.1120,  0.1355,  0.0078,  0.1250, -0.0634],
+        [ 0.0471,  0.0350, -0.0763,  0.0547, -0.1416,  0.0743, -0.0522],
+        [-0.0474,  0.0087,  0.0839,  0.1083, -0.1703, -0.0613,  0.0575]],
+       device='cuda:0')
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lc[?7h[?12l[?25h[?ipdb> c
+[?7h[?12l[?25h[?2004l> /home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py(246)collect_samples_vec()
+    245             next_state, reward, done, _ = self.env.step(action)
+--> 246             import ipdb; ipdb.set_trace()
+    247
+[?2004h[?1l[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lr[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lw[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lr[?7h[?12l[?25h[?25l[?7ld[?7h[?12l[?ipdb> reward
+[?7h[?12l[?25h[?2004larray([0.47696085, 0.61269793, 0.61692745, 0.34726418])
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lc[?7h[?12l[?25h[?ipdb> c
+[?7h[?12l[?25h[?2004l> /home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py(249)collect_samples_vec()
+    248             # rewards.append(reward.clone())
+--> 249             next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+    250             reward = torch.from_numpy(reward).to(device).type(torch.cuda.FloatTensor)
+[?2004h[?1l[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lr[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lw[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lr[?7h[?12l[?25h[?25l[?7ld[?7h[?12l[?ipdb> reward
+[?7h[?12l[?25h[?2004larray([0.44460211, 0.43997964, 0.49365282, 0.28873453])
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lx[?7h[?12l[?25h[?25l[?7li[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7l([?7h[?12l[?25h[?25l[?7l)[?7h[?12l[?ipdb> exit()
+[?7h[?12l[?25h[?2004l
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/home/zhaoming/Documents/push_recovery_env/lib/python3.8/site-packages/IPython/core/debugger.py", line 147, in BdbQuit_excepthook
+    raise ValueError(
+ValueError: `BdbQuit_excepthook` is deprecated since version 5.1
+Original exception was:
+Traceback (most recent call last):
+  File "run_amp.py", line 33, in <module>
+    ppo.collect_samples_multithread()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 445, in collect_samples_multithread
+    self.collect_samples_vec(300, noise=noise)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit

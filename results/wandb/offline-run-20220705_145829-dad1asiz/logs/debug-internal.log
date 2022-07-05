@@ -1,0 +1,23 @@
+2022-07-05 14:58:30,267 INFO    MainThread:380854 [internal.py:wandb_internal():90] W&B internal server running at pid: 380854, started at: 2022-07-05 14:58:30.267676
+2022-07-05 14:58:30,269 DEBUG   HandlerThread:380854 [handler.py:handle_request():140] handle_request: run_start
+2022-07-05 14:58:30,270 INFO    WriterThread:380854 [datastore.py:open_for_write():75] open: results/wandb/offline-run-20220705_145829-dad1asiz/run-dad1asiz.wandb
+2022-07-05 14:58:30,274 DEBUG   HandlerThread:380854 [meta.py:__init__():35] meta init
+2022-07-05 14:58:30,274 DEBUG   HandlerThread:380854 [meta.py:__init__():49] meta init done
+2022-07-05 14:58:30,274 DEBUG   HandlerThread:380854 [meta.py:probe():209] probe
+2022-07-05 14:58:30,280 DEBUG   HandlerThread:380854 [meta.py:_setup_git():199] setup git
+2022-07-05 14:58:30,291 DEBUG   HandlerThread:380854 [meta.py:_setup_git():206] setup git done
+2022-07-05 14:58:30,291 DEBUG   HandlerThread:380854 [meta.py:_save_pip():53] save pip
+2022-07-05 14:58:30,291 DEBUG   HandlerThread:380854 [meta.py:_save_pip():67] save pip done
+2022-07-05 14:58:30,292 DEBUG   HandlerThread:380854 [meta.py:probe():247] probe done
+2022-07-05 14:58:39,901 DEBUG   HandlerThread:380854 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:58:40,286 DEBUG   HandlerThread:380854 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:58:40,663 DEBUG   HandlerThread:380854 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:58:41,260 DEBUG   HandlerThread:380854 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:58:41,261 DEBUG   HandlerThread:380854 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:00:38,710 WARNING MainThread:380854 [internal.py:wandb_internal():153] Internal process interrupt: 1
+2022-07-05 15:00:38,878 WARNING MainThread:380854 [internal.py:wandb_internal():153] Internal process interrupt: 2
+2022-07-05 15:00:38,878 ERROR   MainThread:380854 [internal.py:wandb_internal():156] Internal process interrupted.
+2022-07-05 15:00:39,130 INFO    WriterThread:380854 [datastore.py:close():279] close: results/wandb/offline-run-20220705_145829-dad1asiz/run-dad1asiz.wandb
+2022-07-05 15:00:39,138 INFO    HandlerThread:380854 [handler.py:finish():806] shutting down handler
+2022-07-05 15:00:39,285 INFO    SenderThread:380854 [sender.py:finish():1114] shutting down sender
+2022-07-05 15:00:39,286 INFO    MainThread:380854 [internal.py:handle_exit():80] Internal process exited

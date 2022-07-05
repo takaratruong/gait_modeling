@@ -1,0 +1,18 @@
+2022-07-05 15:09:34,580 INFO    MainThread:383303 [internal.py:wandb_internal():90] W&B internal server running at pid: 383303, started at: 2022-07-05 15:09:34.580656
+2022-07-05 15:09:34,582 INFO    WriterThread:383303 [datastore.py:open_for_write():75] open: results/wandb/offline-run-20220705_150934-3ixqfe9i/run-3ixqfe9i.wandb
+2022-07-05 15:09:34,582 DEBUG   HandlerThread:383303 [handler.py:handle_request():140] handle_request: run_start
+2022-07-05 15:09:34,588 DEBUG   HandlerThread:383303 [meta.py:__init__():35] meta init
+2022-07-05 15:09:34,589 DEBUG   HandlerThread:383303 [meta.py:__init__():49] meta init done
+2022-07-05 15:09:34,589 DEBUG   HandlerThread:383303 [meta.py:probe():209] probe
+2022-07-05 15:09:34,594 DEBUG   HandlerThread:383303 [meta.py:_setup_git():199] setup git
+2022-07-05 15:09:34,605 DEBUG   HandlerThread:383303 [meta.py:_setup_git():206] setup git done
+2022-07-05 15:09:34,605 DEBUG   HandlerThread:383303 [meta.py:_save_pip():53] save pip
+2022-07-05 15:09:34,606 DEBUG   HandlerThread:383303 [meta.py:_save_pip():67] save pip done
+2022-07-05 15:09:34,606 DEBUG   HandlerThread:383303 [meta.py:probe():247] probe done
+2022-07-05 15:09:49,635 WARNING MainThread:383303 [internal.py:wandb_internal():153] Internal process interrupt: 1
+2022-07-05 15:09:49,811 WARNING MainThread:383303 [internal.py:wandb_internal():153] Internal process interrupt: 2
+2022-07-05 15:09:49,811 ERROR   MainThread:383303 [internal.py:wandb_internal():156] Internal process interrupted.
+2022-07-05 15:09:50,585 INFO    SenderThread:383303 [sender.py:finish():1114] shutting down sender
+2022-07-05 15:09:50,637 INFO    WriterThread:383303 [datastore.py:close():279] close: results/wandb/offline-run-20220705_150934-3ixqfe9i/run-3ixqfe9i.wandb
+2022-07-05 15:09:50,638 INFO    HandlerThread:383303 [handler.py:finish():806] shutting down handler
+2022-07-05 15:09:50,638 INFO    MainThread:383303 [internal.py:handle_exit():80] Internal process exited

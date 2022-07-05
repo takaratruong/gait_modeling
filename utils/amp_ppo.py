@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import time
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
 import statistics
 import pickle
@@ -11,8 +11,8 @@ import os
 from scipy.interpolate import interp1d
 
 
-#import matplotlib
-#matplotlib.use('TkAgg')
+import matplotlib
+matplotlib.use('TkAgg')
 
 from utils.amp_models import ActorCriticNet, Discriminator
 
@@ -98,10 +98,10 @@ class RL(object):
 
         self.noisy_test_mean = []
         self.noisy_test_std = []
-        #self.fig = plt.figure()
+        self.fig = plt.figure()
         # self.fig2 = plt.figure()
         self.lr = self.params.lr
-        #plt.show(block=False)
+        plt.show(block=False)
 
         self.test_list = []
         self.noisy_test_list = []
@@ -178,7 +178,7 @@ class RL(object):
 
     def plot_statistics(self):
 
-        #plt.clf()
+        plt.clf()
         ax = self.fig.add_subplot(121)
         # ax2 = self.fig.add_subplot(122)
         low = []
@@ -192,17 +192,19 @@ class RL(object):
             noisy_low.append(self.noisy_test_mean[i] - self.noisy_test_std[i])
             noisy_high.append(self.noisy_test_mean[i] + self.noisy_test_std[i])
             index.append(i)
-        #plt.xlabel('iterations')
-        #plt.ylabel('average rewards')
+        plt.xlabel('iterations')
+        plt.ylabel('average rewards')
         # ax.plot(self.test_mean, 'b')
         ax.plot(self.noisy_test_mean, 'g')
         # ax.fill_between(index, low, high, color='cyan')
         ax.fill_between(index, noisy_low, noisy_high, color='r')
         # ax.plot(map(sub, test_mean, test_std))
-        #self.fig.canvas.draw()
+        self.fig.canvas.draw()
+        # plt.show()
+
 
         return self.noisy_test_mean[-1], noisy_low[-1], noisy_high[-1]
-        # plt.savefig("test.png")
+        #plt.savefig("test.png")
 
     def collect_samples_vec(self, num_samples, start_state=None, noise=-2.5, env_index=0, random_seed=1):
 
@@ -241,6 +243,7 @@ class RL(object):
             actions.append(action.clone())
             log_probs.append(log_prob.clone())
             next_state, reward, done, _ = self.env.step(action)
+            # import ipdb; ipdb.set_trace()
 
             # rewards.append(reward.clone())
             next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
@@ -424,7 +427,7 @@ class RL(object):
         self.time_passed = 0
         score_counter = 0
         total_thread = 0
-        max_samples = 4*300 #6000
+        max_samples = 20*300 #6000
         self.storage = PPOStorage(self.num_inputs, self.num_outputs, max_size=max_samples)
         seeds = [i * 100 for i in range(num_threads)]
 
@@ -448,13 +451,15 @@ class RL(object):
             self.storage.clear()
 
             if (iterations) % 50 == 0:
-                self.vid_callback.save_video(self.model)
+                self.vid_callback.save_video(self.gpu_model)
 
             if (iterations) % 1 == 0:
                 wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": disc_loss})
 
-            if (iterations) % 5 == 0:
+            if (iterations) % 1 == 0:
                 reward_mean, reward_std = self.run_test_with_noise(num_test=2)
+                self.plot_statistics()
+                plt.savefig("test.png")
                 #print(reward_mean, reward_std)
                 wandb.log({"eval/reward_mean": reward_mean, "eval/reward_high": reward_mean+ reward_std, "eval/reward_low": reward_mean-reward_std}, )
 

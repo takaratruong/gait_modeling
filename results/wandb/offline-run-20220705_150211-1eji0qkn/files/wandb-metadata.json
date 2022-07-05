@@ -1,0 +1,27 @@
+{
+    "os": "Linux-5.4.0-121-generic-x86_64-with-glibc2.29",
+    "python": "3.8.10",
+    "heartbeatAt": "2022-07-05T22:02:12.422946",
+    "startedAt": "2022-07-05T22:02:11.910596",
+    "docker": null,
+    "gpu": "NVIDIA RTX A5000",
+    "gpu_count": 1,
+    "cpu_count": 24,
+    "cuda": null,
+    "args": [
+        "-c",
+        "config_amp.txt"
+    ],
+    "state": "running",
+    "program": "run_amp.py",
+    "codePath": "run_amp.py",
+    "git": {
+        "remote": "git@github.com:takaratruong/gait_modeling.git",
+        "commit": "f95f98541656ee023a970a3e1430d7f0e82a4708"
+    },
+    "email": null,
+    "root": "/home/zhaoming/Documents/gait_modeling",
+    "host": "helsinki.stanford.edu",
+    "username": "zhaoming",
+    "executable": "/home/zhaoming/Documents/push_recovery_env/bin/python"
+}

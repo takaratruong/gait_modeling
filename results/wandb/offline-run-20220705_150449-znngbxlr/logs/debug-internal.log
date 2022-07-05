@@ -1,0 +1,58 @@
+2022-07-05 15:04:49,861 INFO    MainThread:382676 [internal.py:wandb_internal():90] W&B internal server running at pid: 382676, started at: 2022-07-05 15:04:49.860766
+2022-07-05 15:04:49,862 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: run_start
+2022-07-05 15:04:49,863 INFO    WriterThread:382676 [datastore.py:open_for_write():75] open: results/wandb/offline-run-20220705_150449-znngbxlr/run-znngbxlr.wandb
+2022-07-05 15:04:49,867 DEBUG   HandlerThread:382676 [meta.py:__init__():35] meta init
+2022-07-05 15:04:49,867 DEBUG   HandlerThread:382676 [meta.py:__init__():49] meta init done
+2022-07-05 15:04:49,867 DEBUG   HandlerThread:382676 [meta.py:probe():209] probe
+2022-07-05 15:04:49,873 DEBUG   HandlerThread:382676 [meta.py:_setup_git():199] setup git
+2022-07-05 15:04:49,883 DEBUG   HandlerThread:382676 [meta.py:_setup_git():206] setup git done
+2022-07-05 15:04:49,883 DEBUG   HandlerThread:382676 [meta.py:_save_pip():53] save pip
+2022-07-05 15:04:49,883 DEBUG   HandlerThread:382676 [meta.py:_save_pip():67] save pip done
+2022-07-05 15:04:49,883 DEBUG   HandlerThread:382676 [meta.py:probe():247] probe done
+2022-07-05 15:05:10,265 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:11,011 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:11,362 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:12,264 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:12,265 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:12,339 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:25,655 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:25,717 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:39,792 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:39,853 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:53,776 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:05:53,834 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:07,548 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:07,609 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:21,460 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:21,520 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:35,136 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:35,299 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:48,938 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:06:49,108 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:03,038 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:03,206 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:16,678 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:16,751 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:30,461 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:30,524 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:43,817 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:43,876 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:57,195 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:07:57,254 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:11,179 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:11,246 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:24,833 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:24,894 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:38,286 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:38,363 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:51,719 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:08:51,778 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:09:05,024 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:09:05,084 DEBUG   HandlerThread:382676 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 15:09:08,099 WARNING MainThread:382676 [internal.py:wandb_internal():153] Internal process interrupt: 1
+2022-07-05 15:09:08,339 WARNING MainThread:382676 [internal.py:wandb_internal():153] Internal process interrupt: 2
+2022-07-05 15:09:08,339 ERROR   MainThread:382676 [internal.py:wandb_internal():156] Internal process interrupted.
+2022-07-05 15:09:08,894 INFO    SenderThread:382676 [sender.py:finish():1114] shutting down sender
+2022-07-05 15:09:09,101 INFO    WriterThread:382676 [datastore.py:close():279] close: results/wandb/offline-run-20220705_150449-znngbxlr/run-znngbxlr.wandb
+2022-07-05 15:09:09,102 INFO    HandlerThread:382676 [handler.py:finish():806] shutting down handler
+2022-07-05 15:09:09,102 INFO    MainThread:382676 [internal.py:handle_exit():80] Internal process exited

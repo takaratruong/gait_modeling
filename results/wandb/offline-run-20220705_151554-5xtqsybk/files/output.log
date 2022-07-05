@@ -1,0 +1,138 @@
+3.1097886249990595e-18 0.2545213918501392 4.744301027606846e-13
+> /home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py(201)step()
+    200         #for amp
+--> 201         self.total_reward += reward
+    202
+ipdb>
+5.236333150945184e-05 0.09387571774608773 3.950241262287053e-12
+> /home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py(201)step()
+    200         #for amp
+--> 201         self.total_reward += reward
+    202
+ipdb>
+3.8097590045178443e-44 0.22980532960057462 1.061556150364349e-12
+> /home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py(201)step()
+    200         #for amp
+--> 201         self.total_reward += reward
+    202
+ipdb>
+1.8001471452246504e-23 0.05523944556819266 1.9504814049657985e-06
+> /home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py(201)step()
+    200         #for amp
+--> 201         self.total_reward += reward
+    202
+ipdb>
+Process ForkServerProcess-2:
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/vec_env/subproc_vec_env.py", line 24, in _worker
+    env = env_fn_wrapper.var()
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/env_util.py", line 82, in _init
+    env = env_id(**env_kwargs)
+  File "run_amp.py", line 26, in <lambda>
+    train_env = make_vec_env(lambda: WalkerEnv(args=args), n_envs=args.num_envs, seed=0, vec_env_cls=SubprocVecEnv)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 82, in __init__
+    walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_mujoco_env.py", line 71, in __init__
+    observation, _reward, done, _info = self.step(action)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit
+Traceback (most recent call last):
+  File "run_amp.py", line 26, in <module>
+    train_env = make_vec_env(lambda: WalkerEnv(args=args), n_envs=args.num_envs, seed=0, vec_env_cls=SubprocVecEnv)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/env_util.py", line 105, in make_vec_env
+    return vec_env_cls([make_env(i + start_index) for i in range(n_envs)], **vec_env_kwargs)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/vec_env/subproc_vec_env.py", line 121, in __init__
+    observation_space, action_space = self.remotes[0].recv()
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 250, in recv
+    buf = self._recv_bytes()
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 414, in _recv_bytes
+    buf = self._recv(4)
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+ConnectionResetError: [Errno 104] Connection reset by peer
+Process ForkServerProcess-4:
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/vec_env/subproc_vec_env.py", line 24, in _worker
+    env = env_fn_wrapper.var()
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/env_util.py", line 82, in _init
+    env = env_id(**env_kwargs)
+  File "run_amp.py", line 26, in <lambda>
+    train_env = make_vec_env(lambda: WalkerEnv(args=args), n_envs=args.num_envs, seed=0, vec_env_cls=SubprocVecEnv)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 82, in __init__
+    walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_mujoco_env.py", line 71, in __init__
+    observation, _reward, done, _info = self.step(action)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit
+Process ForkServerProcess-5:
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/vec_env/subproc_vec_env.py", line 24, in _worker
+    env = env_fn_wrapper.var()
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/env_util.py", line 82, in _init
+    env = env_id(**env_kwargs)
+  File "run_amp.py", line 26, in <lambda>
+    train_env = make_vec_env(lambda: WalkerEnv(args=args), n_envs=args.num_envs, seed=0, vec_env_cls=SubprocVecEnv)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 82, in __init__
+    walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_mujoco_env.py", line 71, in __init__
+    observation, _reward, done, _info = self.step(action)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit
+Process ForkServerProcess-3:
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/vec_env/subproc_vec_env.py", line 24, in _worker
+    env = env_fn_wrapper.var()
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/env_util.py", line 82, in _init
+    env = env_id(**env_kwargs)
+  File "run_amp.py", line 26, in <lambda>
+    train_env = make_vec_env(lambda: WalkerEnv(args=args), n_envs=args.num_envs, seed=0, vec_env_cls=SubprocVecEnv)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 82, in __init__
+    walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_mujoco_env.py", line 71, in __init__
+    observation, _reward, done, _info = self.step(action)
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/home/zhaoming/Documents/gait_modeling/environments/walker2d/walker2d_env.py", line 201, in step
+    self.total_reward += reward
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit

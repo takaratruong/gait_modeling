@@ -1,0 +1,21 @@
+2022-07-05 14:57:39,840 INFO    MainThread:380388 [internal.py:wandb_internal():90] W&B internal server running at pid: 380388, started at: 2022-07-05 14:57:39.840521
+2022-07-05 14:57:39,842 DEBUG   HandlerThread:380388 [handler.py:handle_request():140] handle_request: run_start
+2022-07-05 14:57:39,842 INFO    WriterThread:380388 [datastore.py:open_for_write():75] open: results/wandb/offline-run-20220705_145739-js1ps6xs/run-js1ps6xs.wandb
+2022-07-05 14:57:39,846 DEBUG   HandlerThread:380388 [meta.py:__init__():35] meta init
+2022-07-05 14:57:39,847 DEBUG   HandlerThread:380388 [meta.py:__init__():49] meta init done
+2022-07-05 14:57:39,847 DEBUG   HandlerThread:380388 [meta.py:probe():209] probe
+2022-07-05 14:57:39,852 DEBUG   HandlerThread:380388 [meta.py:_setup_git():199] setup git
+2022-07-05 14:57:39,862 DEBUG   HandlerThread:380388 [meta.py:_setup_git():206] setup git done
+2022-07-05 14:57:39,862 DEBUG   HandlerThread:380388 [meta.py:_save_pip():53] save pip
+2022-07-05 14:57:39,863 DEBUG   HandlerThread:380388 [meta.py:_save_pip():67] save pip done
+2022-07-05 14:57:39,863 DEBUG   HandlerThread:380388 [meta.py:probe():247] probe done
+2022-07-05 14:57:49,200 DEBUG   HandlerThread:380388 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:57:49,599 DEBUG   HandlerThread:380388 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:57:49,941 DEBUG   HandlerThread:380388 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:57:50,571 DEBUG   HandlerThread:380388 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:57:50,571 DEBUG   HandlerThread:380388 [handler.py:handle_request():140] handle_request: partial_history
+2022-07-05 14:58:02,438 WARNING MainThread:380388 [internal.py:wandb_internal():153] Internal process interrupt: 1
+2022-07-05 14:58:02,670 WARNING MainThread:380388 [internal.py:wandb_internal():153] Internal process interrupt: 2
+2022-07-05 14:58:02,671 ERROR   MainThread:380388 [internal.py:wandb_internal():156] Internal process interrupted.
+2022-07-05 14:58:02,846 INFO    SenderThread:380388 [sender.py:finish():1114] shutting down sender
+2022-07-05 14:58:02,943 INFO    MainThread:380388 [internal.py:handle_exit():80] Internal process exited

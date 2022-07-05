@@ -1,7 +1,7 @@
 exp_name = amp
 env = walker2d
 
-frame_skip = 20
+frame_skip = 10
 train_mode = standard
 
 num_envs = 2

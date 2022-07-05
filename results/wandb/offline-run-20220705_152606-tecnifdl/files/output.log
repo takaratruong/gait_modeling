@@ -1,0 +1,45 @@
+9.65013953377398e-05 0.01402018565559687 2.928808480744315e-05 -0.001361624351134423 1.3598492109218345
+0.7972296435990903 0.025743243445198252 1.231580699479019e-05 0.00021281865274836456 -0.212890777680082
+0.0760342250755185 0.003529731030341537 8.342783116084432e-06 -0.0007191474857319318 0.7178538396883667
+0.00037272526900285284 0.04778190299044031 4.085211662955541e-05 -0.0012580001359495836 1.2565560702811487
+9.656604121844042e-06 0.10241777422196352 3.203468779886399e-06 0.0015701873002923557 -1.5197278427896255
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+iteration:  0
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+init vel [1. 0. 0. 0. 0. 0. 0. 0. 0.]
+0.9622915090775337 0.9994784803647088 0.9984597982116671 -9.00442187976647e-05 0.08767877053641186
+0.9938923786379755 0.9992914266353167 0.999958888235327 3.584377099425999e-05 -0.03500384723338233
+0.9996040473365231 0.999278050453505 0.9999897693710907 8.905205788906881e-06 -0.008899785557256979
+0.9988719830334587 0.9996672493629072 0.9999961712593362 1.5185887816309786e-05 -0.015024334895764555
+> /home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py(249)collect_samples_vec()
+    248             # rewards.append(reward.clone())
+--> 249             next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+    250             reward = torch.from_numpy(reward).to(device).type(torch.cuda.FloatTensor)
+[?2004h[?1l[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lx[?7h[?12l[?25h[?25l[?7li[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7l([?7h[?12l[?25h[?25l[?7l)[?7h[?12l[?ipdb> exit()
+[?7h[?12l[?25h[?2004l
+Traceback (most recent call last):
+  File "run_amp.py", line 33, in <module>
+    ppo.collect_samples_multithread()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 445, in collect_samples_multithread
+    self.collect_samples_vec(300, noise=noise)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit
+If you suspect this is an IPython 8.3.0 bug, please report it at:
+    https://github.com/ipython/ipython/issues
+or send an email to the mailing list at ipython-dev@python.org
+You can print a more detailed traceback right now with "%tb", or use "%debug"
+to interactively debug it.
+Extra-detailed tracebacks for bug-reporting purposes can be enabled via:
+    %config Application.verbose_crash=True

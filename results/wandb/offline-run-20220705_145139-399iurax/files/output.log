@@ -1,0 +1,12 @@
+iteration:  0
+Found 3 GPUs for rendering. Using device 0.
+reward mean, 6.236886830927466
+reward std, 4.711413906855477
+Traceback (most recent call last):
+  File "run_amp.py", line 33, in <module>
+    ppo.collect_samples_multithread()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 458, in collect_samples_multithread
+    self.plot_statistics()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 182, in plot_statistics
+    ax = self.fig.add_subplot(121)
+AttributeError: 'RL' object has no attribute 'fig'

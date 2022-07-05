@@ -150,7 +150,7 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         else:
             joint_action = action[[3, 4, 5, 0, 1, 2]].copy()
 
-        self.sim_cntr += int(self.args.phase_action_mag * action[6])
+        self.sim_cntr += int(self.args.phase_action_mag * action[6]*0)
 
         ref = self.cntr2ref(self.sim_cntr + self.frame_skip)
         joint_target = joint_action + ref[3:]  # add action to joint ref to create final joint target
@@ -194,6 +194,7 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         orient_reward = np.exp(-orient_reward)
 
         reward = 0.3*orient_reward+0.4*joint_reward+0.3*pos_reward
+        # print(orient_reward, joint_reward, pos_reward, orient_ref - orient_obs, self.sim.data.qvel[2])
 
         #for amp
         self.total_reward += reward
@@ -218,6 +219,7 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         self.impulse_time_start = self.data.time + .001
 
         self.set_state(qpos, self.init_qvel)
+        # print("init vel", self.init_qvel)
 
         #for amp
         self.total_reward = 0

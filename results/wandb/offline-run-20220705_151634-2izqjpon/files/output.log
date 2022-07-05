@@ -1,0 +1,74 @@
+0.17971409816373876 0.057084429069455295 1.264364617699499e-06
+0.11585003781563033 0.1766111686153216 1.4907467186484011e-13
+7.324947748373374e-10 0.21297333577890154 1.9185413483541756e-17
+0.8152330661118106 0.0966341625369289 7.28013136459323e-11
+1.0899327531868218e-07 0.1519514833076863 1.6760238498663933e-13
+iteration:  0
+0.8362503013650431 0.9567700185121005 0.30806750800165916
+3.4628092138074644e-05 0.895760654211044 0.7654298337123839
+0.06973164148076634 0.9141230376740775 0.07878177466321556
+0.1687554953963853 0.971641121633357 0.47471026044571335
+> /home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py(249)collect_samples_vec()
+    248             # rewards.append(reward.clone())
+--> 249             next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+    250             reward = torch.from_numpy(reward).to(device).type(torch.cuda.FloatTensor)
+[?2004h[?1l[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lo[?7h[?12l[?25h[?25l[?7lb[?7h[?12l[?25h[?25l[?7ls[?7h[?12l[?25hipdb> obs
+[?7h[?12l[?25h[?2004l*** NameError: name 'obs' is not defined
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lo[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7ln[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lx[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7l_[?7h[?12l[?25h[?25l[?7ls[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7le[?7h[?1ipdb> next_state
+[?7h[?12l[?25h[?2004larray([[ 1.14664520e+00,  6.49900315e-03, -3.18348669e-01,
+        -3.63276441e-01,  2.67811205e-01,  5.55008984e-01,
+        -3.78142039e-01,  2.86134368e-02,  1.27295410e-01,
+        -1.83855625e-02,  5.96526598e-02, -3.33748004e-02,
+        -6.17430841e-02,  5.70279988e-02, -6.77253033e-03,
+         8.99652533e-02, -1.89616207e-02,  4.80000000e-01],
+       [ 1.20080334e+00,  4.42992600e-02,  1.40940022e-01,
+        -2.55185283e-01,  1.58989989e-01,  3.71963201e-01,
+        -1.32680075e+00,  1.61606384e-01,  1.16349834e-01,
+         2.97757653e-03,  1.43296339e-01,  1.28920455e-02,
+         7.52499632e-02,  5.31120549e-02,  1.97104073e-01,
+        -1.38868130e-02,  1.04998439e-01,  2.54000000e-01],
+       [ 1.14615745e+00,  5.98483417e-03,  5.42481330e-01,
+        -5.35305873e-01, -1.40231819e-02, -6.97997188e-02,
+        -1.03043133e+00,  1.17007703e-01,  6.56882514e-02,
+        -7.97615769e-03, -1.89079703e-02,  1.73575268e-02,
+        -1.83966187e-01,  1.01501427e-01,  1.18063710e-01,
+        -1.81353807e-01,  3.00632616e-02,  1.16000000e-01],
+       [ 1.14367491e+00,  2.53910583e-04,  5.35845817e-01,
+        -4.31401592e-01,  9.40209894e-03, -1.65994399e-01,
+        -8.06789688e-01,  7.41709150e-02,  4.95913342e-02,
+        -1.36096312e-02, -7.29808327e-02,  2.91561228e-02,
+        -2.74396748e-01, -6.78304377e-03,  1.40625958e-01,
+        -3.35689087e-01, -7.14743624e-02,  8.40000000e-02]])
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lc[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25hipdb> act
+[?7h[?12l[?25h[?2004l*** NameError: name 'act' is not defined
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7la[?7h[?12l[?25h[?25l[?7lc[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7li[?7h[?12l[?25h[?25l[?7lo[?7h[?12l[?25h[?25l[?7lp[?7h[?12l[?25h[?25l[?7ln[?7h[?12l[ipdb> actiopn
+[?7h[?12l[?25h[?2004l*** NameError: name 'actiopn' is not defined
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7lactiopn[?7h[?12l[?25h[?25l[?7[?7h[?12l[?25h[?25l[?7[?7h[?12l[?2ipdb> action
+[?7h[?12l[?25h[?2004ltensor([[ 0.0158, -0.0228, -0.0078,  0.0391,  0.0155, -0.0007, -0.2014],
+        [-0.0196,  0.0137, -0.1120,  0.1355,  0.0078,  0.1250, -0.0634],
+        [ 0.0470,  0.0350, -0.0763,  0.0547, -0.1416,  0.0742, -0.0522],
+        [-0.0474,  0.0087,  0.0839,  0.1083, -0.1703, -0.0613,  0.0574]],
+       device='cuda:0')
+[?2004h[?25l[?7lipdb> [?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7l[?7h[?12l[?25h[?25l[?7le[?7h[?12l[?25h[?25l[?7lx[?7h[?12l[?25h[?25l[?7li[?7h[?12l[?25h[?25l[?7lt[?7h[?12l[?25h[?25l[?7l([?7h[?12l[?25h[?25l[?7l)[?7h[?12l[?ipdb> exit()
+[?7h[?12l[?25h[?2004l
+Traceback (most recent call last):
+  File "run_amp.py", line 33, in <module>
+    ppo.collect_samples_multithread()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 445, in collect_samples_multithread
+    self.collect_samples_vec(300, noise=noise)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 249, in collect_samples_vec
+    next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
+  File "/usr/lib/python3.8/bdb.py", line 88, in trace_dispatch
+    return self.dispatch_line(frame)
+  File "/usr/lib/python3.8/bdb.py", line 113, in dispatch_line
+    if self.quitting: raise BdbQuit
+bdb.BdbQuit
+If you suspect this is an IPython 8.3.0 bug, please report it at:
+    https://github.com/ipython/ipython/issues
+or send an email to the mailing list at ipython-dev@python.org
+You can print a more detailed traceback right now with "%tb", or use "%debug"
+to interactively debug it.
+Extra-detailed tracebacks for bug-reporting purposes can be enabled via:
+    %config Application.verbose_crash=True

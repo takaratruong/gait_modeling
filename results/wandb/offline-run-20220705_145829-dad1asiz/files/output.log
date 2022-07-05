@@ -1,0 +1,50 @@
+iteration:  0
+Found 3 GPUs for rendering. Using device 0.
+reward mean, 6.644204011128339
+reward std, 0.4575035233602905
+Process ForkServerProcess-3:
+Process ForkServerProcess-2:
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/vec_env/subproc_vec_env.py", line 27, in _worker
+    cmd, data = remote.recv()
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 250, in recv
+    buf = self._recv_bytes()
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 414, in _recv_bytes
+    buf = self._recv(4)
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+  File "/home/zhaoming/Documents/stable-baselines3/stable_baselines3/common/vec_env/subproc_vec_env.py", line 27, in _worker
+    cmd, data = remote.recv()
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 250, in recv
+    buf = self._recv_bytes()
+KeyboardInterrupt
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 414, in _recv_bytes
+    buf = self._recv(4)
+  File "/usr/lib/python3.8/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "run_amp.py", line 33, in <module>
+    ppo.collect_samples_multithread()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 460, in collect_samples_multithread
+    self.plot_statistics()
+  File "/home/zhaoming/Documents/gait_modeling/utils/amp_ppo.py", line 203, in plot_statistics
+    plt.show()
+  File "/home/zhaoming/Documents/push_recovery_env/lib/python3.8/site-packages/matplotlib/pyplot.py", line 389, in show
+    return _get_backend_mod().show(*args, **kwargs)
+  File "/home/zhaoming/Documents/push_recovery_env/lib/python3.8/site-packages/matplotlib/backend_bases.py", line 3544, in show
+    cls.mainloop()
+  File "/home/zhaoming/Documents/push_recovery_env/lib/python3.8/site-packages/matplotlib/backends/_backend_tk.py", line 982, in mainloop
+    first_manager.window.mainloop()
+  File "/usr/lib/python3.8/tkinter/__init__.py", line 1429, in mainloop
+    self.tk.mainloop(n)
+KeyboardInterrupt

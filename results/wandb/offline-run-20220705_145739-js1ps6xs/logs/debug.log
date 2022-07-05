@@ -1,0 +1,25 @@
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_setup.py:_flush():76] Configure stats pid to 380306
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_setup.py:_flush():76] Loading settings from /home/zhaoming/.config/wandb/settings
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_setup.py:_flush():76] Loading settings from /home/zhaoming/Documents/gait_modeling/wandb/settings
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'run_amp.py', 'program': 'run_amp.py'}
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_setup.py:_flush():76] Applying login settings: {'mode': 'offline'}
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_init.py:_log_setup():461] Logging user logs to results/wandb/offline-run-20220705_145739-js1ps6xs/logs/debug.log
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_init.py:_log_setup():462] Logging internal logs to results/wandb/offline-run-20220705_145739-js1ps6xs/logs/debug-internal.log
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_init.py:init():495] calling init triggers
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_init.py:init():498] wandb.init called with sweep_config: {}
+config: {'exp_name': 'amp', 'my_config': 'config_amp.txt', 'log_dir': 'results/', 'eval_freq': 10, 'vid_freq': 10, 'visualize': False, 'vis_ref': False, 'train_mode': 'standard', 'environment': 'walker2d', 'fixed_gait_policy_path': 'results/models/walk/best_model', 'num_envs': 2, 'num_steps': 2048, 'time_steps': 1000000000.0, 'num_epochs': 10, 'frame_skip': 20, 'max_ep_time': 10.0, 'gait_policy': None, 'rand_perturbation': False, 'const_perturbation': False, 'perturbation_force': 90, 'min_perturbation_force_mag': 70, 'perturbation_duration': 0.2, 'perturbation_delay': 3.5, 'phase_action_mag': 50.0, 'orient_weight': 0.3, 'joint_weight': 0.4, 'pos_weight': 0.3, 'lr': 0.001, 'gamma': 0.99, 'gae_param': 0.95, 'clip': 0.2, 'ent_coeff': 0, 'num_epoch': 32, 'time_horizon': 200000, 'max_episode_length': 2048, 'seed': 1, 'min_episode': 5}
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [wandb_init.py:init():548] starting backend
+2022-07-05 14:57:39,321 INFO    MainThread:380306 [backend.py:_multiprocessing_setup():97] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2022-07-05 14:57:39,328 INFO    MainThread:380306 [backend.py:ensure_launched():217] starting backend process...
+2022-07-05 14:57:39,333 INFO    MainThread:380306 [backend.py:ensure_launched():222] started backend process with pid: 380388
+2022-07-05 14:57:39,334 INFO    MainThread:380306 [wandb_init.py:init():558] backend started and connected
+2022-07-05 14:57:39,338 INFO    MainThread:380306 [wandb_init.py:init():634] updated telemetry
+2022-07-05 14:57:39,351 INFO    MainThread:380306 [wandb_init.py:init():700] starting run threads in backend
+2022-07-05 14:57:39,887 INFO    MainThread:380306 [wandb_run.py:_console_start():1893] atexit reg
+2022-07-05 14:57:39,888 INFO    MainThread:380306 [wandb_run.py:_redirect():1766] redirect: SettingsConsole.REDIRECT
+2022-07-05 14:57:39,888 INFO    MainThread:380306 [wandb_run.py:_redirect():1771] Redirecting console.
+2022-07-05 14:57:39,889 INFO    MainThread:380306 [wandb_run.py:_redirect():1827] Redirects installed.
+2022-07-05 14:57:39,889 INFO    MainThread:380306 [wandb_init.py:init():732] run started, returning control to user process
+2022-07-05 14:58:03,284 INFO    MainThread:380306 [wandb_run.py:_atexit_cleanup():1862] got exitcode: 255
+2022-07-05 14:58:03,285 INFO    MainThread:380306 [wandb_run.py:_restore():1834] restore

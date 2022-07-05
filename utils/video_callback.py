@@ -28,7 +28,8 @@ class AMPVideoCallback():
             obs = self.vid_env.reset()
             done = False
             while not done:
-                action =  model.sample_best_actions(torch.tensor(obs).float()).detach().numpy()
+                # import ipdb; ipdb.set_trace()
+                action =  model.sample_best_actions(torch.tensor(obs).float().cuda()).detach().cpu().numpy()
                 obs, _, done, _ = self.vid_env.step(action)
 
         self.vid_env.close()

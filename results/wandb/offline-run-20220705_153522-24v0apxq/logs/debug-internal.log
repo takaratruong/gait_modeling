@@ -1,0 +1,18 @@
+2022-07-05 15:35:23,042 INFO    MainThread:388838 [internal.py:wandb_internal():90] W&B internal server running at pid: 388838, started at: 2022-07-05 15:35:23.041839
+2022-07-05 15:35:23,043 DEBUG   HandlerThread:388838 [handler.py:handle_request():140] handle_request: run_start
+2022-07-05 15:35:23,044 INFO    WriterThread:388838 [datastore.py:open_for_write():75] open: results/wandb/offline-run-20220705_153522-24v0apxq/run-24v0apxq.wandb
+2022-07-05 15:35:23,051 DEBUG   HandlerThread:388838 [meta.py:__init__():35] meta init
+2022-07-05 15:35:23,051 DEBUG   HandlerThread:388838 [meta.py:__init__():49] meta init done
+2022-07-05 15:35:23,051 DEBUG   HandlerThread:388838 [meta.py:probe():209] probe
+2022-07-05 15:35:23,058 DEBUG   HandlerThread:388838 [meta.py:_setup_git():199] setup git
+2022-07-05 15:35:23,069 DEBUG   HandlerThread:388838 [meta.py:_setup_git():206] setup git done
+2022-07-05 15:35:23,069 DEBUG   HandlerThread:388838 [meta.py:_save_pip():53] save pip
+2022-07-05 15:35:23,069 DEBUG   HandlerThread:388838 [meta.py:_save_pip():67] save pip done
+2022-07-05 15:35:23,069 DEBUG   HandlerThread:388838 [meta.py:probe():247] probe done
+2022-07-05 15:35:25,702 WARNING MainThread:388838 [internal.py:wandb_internal():153] Internal process interrupt: 1
+2022-07-05 15:35:25,870 WARNING MainThread:388838 [internal.py:wandb_internal():153] Internal process interrupt: 2
+2022-07-05 15:35:25,870 ERROR   MainThread:388838 [internal.py:wandb_internal():156] Internal process interrupted.
+2022-07-05 15:35:26,045 INFO    SenderThread:388838 [sender.py:finish():1114] shutting down sender
+2022-07-05 15:35:26,098 INFO    WriterThread:388838 [datastore.py:close():279] close: results/wandb/offline-run-20220705_153522-24v0apxq/run-24v0apxq.wandb
+2022-07-05 15:35:26,101 INFO    HandlerThread:388838 [handler.py:finish():806] shutting down handler
+2022-07-05 15:35:26,101 INFO    MainThread:388838 [internal.py:handle_exit():80] Internal process exited
