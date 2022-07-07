@@ -79,8 +79,8 @@ class MujocoEnv(gym.Env):
         #bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
         #low, high = bounds.T
         #28 actuators + 1 phase
-        low = np.array([-.3 for _ in range(28)]).astype('float32')
-        high = np.array([.3 for _ in range(28)]).astype('float32')
+        low = np.array([-.3 for _ in range(29)]).astype('float32')
+        high = np.array([.3 for _ in range(29)]).astype('float32')
 
         self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
         return self.action_space

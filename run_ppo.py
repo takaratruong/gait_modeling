@@ -22,7 +22,18 @@ if __name__ == '__main__':
                 target_kl=.01, verbose=True,  clip_range=.1, ent_coef=.000585045, vf_coef=0.871923, max_grad_norm=10, learning_rate=1e-4,
                 tensorboard_log=args.log_dir + 'tf/', policy_kwargs=POLICY_KWARGS)
 
-    model.learn(total_timesteps=args.time_steps, callback=[eval_callback, vid_callback], tb_log_name=args.exp_name)
+    model.load('results/fg/best_model')
 
-    run.finish()
+    for _ in range(4):
+        obs = vid_env.reset()
+        done = False
+        while not done:
+            action, _ = model.predict(obs, deterministic=False)
+            obs, _, done, _ = vid_env.step(action)
+
+    vid_env.close()
+
+    #model.learn(total_timesteps=args.time_steps, callback=[eval_callback, vid_callback], tb_log_name=args.exp_name)
+
+    #run.finish()
 

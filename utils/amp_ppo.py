@@ -1,18 +1,21 @@
 import torch
 import numpy as np
 import time
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
-import statistics
 import pickle
 import torch.optim as optim
 import wandb
 import os
 from scipy.interpolate import interp1d
 
+#os.environ["MKL_NUM_THREADS"] = "10"
+#os.environ["NUMEXPR_NUM_THREADS"] = "10"
+#os.environ["OMP_NUM_THREADS"] = "10"
 
-#import matplotlib
-#matplotlib.use('TkAgg')
+
+import matplotlib
+matplotlib.use('TkAgg')
 
 from utils.amp_models import ActorCriticNet, Discriminator
 
@@ -91,17 +94,20 @@ class RL(object):
         self.Net = ActorCriticNet
 
         self.model = self.Net(self.num_inputs, self.num_outputs, self.hidden_layer)
-        self.discriminator = Discriminator(8 * 2, [128, 128]) #<---Dsicriminator initialization FIX
+
+        # discriminator
+        #self.col = [0, 1, 2, 3, 4, 5, 6, 7, 8, 17] # for 2d walker
+
+        self.discriminator = Discriminator(69 * 2, [128, 128])
         self.model.share_memory()
         self.test_mean = []
         self.test_std = []
 
         self.noisy_test_mean = []
         self.noisy_test_std = []
-        #self.fig = plt.figure()
-        # self.fig2 = plt.figure()
+        self.fig = plt.figure()
         self.lr = self.params.lr
-        #plt.show(block=False)
+        plt.show(block=False)
 
         self.test_list = []
         self.noisy_test_list = []
@@ -112,7 +118,6 @@ class RL(object):
 
         self.best_validation = 1.0
         self.current_best_validation = 1.0
-
 
         self.gpu_model = self.Net(self.num_inputs, self.num_outputs, self.hidden_layer)
         self.gpu_model.to(device)
@@ -150,8 +155,8 @@ class RL(object):
                     total_rewards.append(total_reward)
                     break
         # print("avg test reward is", ave_test_reward)
-        reward_mean = statistics.mean(total_rewards)
-        reward_std = statistics.stdev(total_rewards)
+        reward_mean = np.mean(total_rewards)
+        reward_std = np.std(total_rewards)
         self.test_mean.append(reward_mean)
         self.test_std.append(reward_std)
         self.test_list.append((reward_mean, reward_std))
@@ -159,8 +164,8 @@ class RL(object):
 
     def run_test_with_noise(self, num_test=10):
 
-        reward_mean = statistics.mean(self.total_rewards)
-        reward_std = statistics.stdev(self.total_rewards)
+        reward_mean = np.mean(self.total_rewards)
+        reward_std = np.std(self.total_rewards)
         # print(reward_mean, reward_std, self.total_rewards)
         self.noisy_test_mean.append(reward_mean)
         self.noisy_test_std.append(reward_std)
@@ -178,7 +183,7 @@ class RL(object):
 
     def plot_statistics(self):
 
-        #plt.clf()
+        plt.clf()
         ax = self.fig.add_subplot(121)
         # ax2 = self.fig.add_subplot(122)
         low = []
@@ -192,23 +197,29 @@ class RL(object):
             noisy_low.append(self.noisy_test_mean[i] - self.noisy_test_std[i])
             noisy_high.append(self.noisy_test_mean[i] + self.noisy_test_std[i])
             index.append(i)
-        #plt.xlabel('iterations')
-        #plt.ylabel('average rewards')
+        plt.xlabel('iterations')
+        plt.ylabel('average rewards')
         # ax.plot(self.test_mean, 'b')
         ax.plot(self.noisy_test_mean, 'g')
         # ax.fill_between(index, low, high, color='cyan')
         ax.fill_between(index, noisy_low, noisy_high, color='r')
         # ax.plot(map(sub, test_mean, test_std))
-        #self.fig.canvas.draw()
+        self.fig.canvas.draw()
+        # plt.show()
+
 
         return self.noisy_test_mean[-1], noisy_low[-1], noisy_high[-1]
-        # plt.savefig("test.png")
+        #plt.savefig("test.png")
+
+    def feature_extractor(self, state):
+        cols = [0, 1, 2, 3, 4, 5, 6, 7, 8, 17]
+        #return state[:, cols]
+        return state
 
     def collect_samples_vec(self, num_samples, start_state=None, noise=-2.5, env_index=0, random_seed=1):
 
-        # if start_state == None:
-        #     start_state = self.env.reset()
-        start_state = self.env.reset()
+        start_state = self.env.observe()
+
         samples = 0
         done = False
         states = []
@@ -225,6 +236,9 @@ class RL(object):
         self.gpu_model.set_noise(noise)
 
         state = start_state
+
+        print(state.shape)
+
         total_reward1 = 0
         total_reward2 = 0
         calculate_done1 = False
@@ -240,7 +254,7 @@ class RL(object):
             states.append(state.clone())
             actions.append(action.clone())
             log_probs.append(log_prob.clone())
-            next_state, reward, done, _ = self.env.step(action)
+            next_state, reward, done, _ = self.env.step(action.cpu().numpy()) #< ----- change
 
             # rewards.append(reward.clone())
             next_state = torch.from_numpy(next_state).to(device).type(torch.cuda.FloatTensor)
@@ -251,7 +265,7 @@ class RL(object):
 
             next_states.append(next_state.clone())
 
-            reward = self.discriminator.compute_disc_reward(state[:, 0:8], next_state[:, 0:8]) * 0.0 + 1. * reward
+            reward = self.discriminator.compute_disc_reward(self.feature_extractor(state), self.feature_extractor(next_state)) #* 0.0 + 1. * reward
 
             rewards.append(reward.clone())
 
@@ -281,6 +295,8 @@ class RL(object):
     """
     def load_motion_data(self):
         #self.motion_data = np.loadtxt("environments/walker2d/2d_walking.txt")
+        self.expert_ref = np.load('expert_motion.npy')
+
         self.ref = np.loadtxt("environments/walker2d/2d_walking.txt")
         self.gait_ref = interp1d(np.arange(0, 11) / 10, self.ref, axis=0)
         self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), self.ref)) / .1, axis=0), axis=0)
@@ -294,12 +310,25 @@ class RL(object):
     def sample_motion_data(self, phase_cnt):
         """ SPECIFIC TO 2dWalker"""
         phase = phase_cnt % 500 / 500
-        state = self.gait_ref(phase)
+        pos = self.gait_ref(phase)
+        vel = self.gait_vel_ref(phase) / 10
 
-        state[1] += 1.25  # adjust y ("height")
-        state = state[:, 1:]  # remove x, now [y, joints]
+        pos[1] += 1.25  # adjust y ("height")
+        pos = pos[:, 1:]  # remove x, now [y, joints]
+        #print("xvel ref", vel[:,0])
+        x_vel = np.ones_like(phase).reshape(-1,1)/10
+        #print(x_vel)
+        state = np.hstack((pos, x_vel, phase.reshape(-1, 1)))
 
         return torch.from_numpy(state).float().to(device) #excluding x_vel and phase
+
+    def sample_expert_motion(self, batch_size):
+
+        idx = np.random.randint(self.expert_ref.shape[0], size=batch_size)
+
+        samples = self.expert_ref[idx, :]
+
+        return torch.from_numpy(self.feature_extractor(samples[:, 0, :])).float().to(device), torch.from_numpy(self.feature_extractor(samples[:, 1, :])).float().to(device)
 
     """ FIX """
     def update_discriminator(self, batch_size, num_epoch):
@@ -309,13 +338,17 @@ class RL(object):
 
         for k in range(num_epoch):
             batch_states, batch_next_states = self.storage.discriminator_sample(batch_size)
-            policy_d = self.discriminator.compute_disc(batch_states[:, 0:8], batch_next_states[:, 0:8])
+
+            policy_d = self.discriminator.compute_disc(self.feature_extractor(batch_states), self.feature_extractor(batch_next_states)) # 8
             policy_loss = (policy_d + torch.ones(policy_d.size(), device=device)) ** 2
             policy_loss = policy_loss.mean()
 
-            phase = np.random.choice(500 - self.params.frame_skip, batch_size)
-            batch_expert_states = self.sample_motion_data(phase)
-            batch_expert_next_states = self.sample_motion_data(phase + self.params.frame_skip)
+            #phase = np.random.choice(500 - self.params.frame_skip, batch_size)
+            #batch_expert_states = self.sample_motion_data(phase)
+            #batch_expert_next_states = self.sample_motion_data(phase + self.params.frame_skip)
+
+            batch_expert_states, batch_expert_next_states = self.sample_expert_motion(batch_size)
+
             expert_d = self.discriminator.compute_disc(batch_expert_states, batch_expert_next_states)
             expert_loss = (expert_d - torch.ones(expert_d.size(), device=device)) ** 2
             expert_loss = expert_loss.mean()
@@ -424,7 +457,8 @@ class RL(object):
         self.time_passed = 0
         score_counter = 0
         total_thread = 0
-        max_samples = 4*300 #6000
+        max_samples = self.num_envs*self.params.num_steps #6000
+
         self.storage = PPOStorage(self.num_inputs, self.num_outputs, max_size=max_samples)
         seeds = [i * 100 for i in range(num_threads)]
 
@@ -439,7 +473,7 @@ class RL(object):
             print("iteration: ", iterations)
             iteration_start = time.time()
             while self.storage.counter < max_samples:
-                self.collect_samples_vec(300, noise=noise)
+                self.collect_samples_vec(self.params.num_steps, noise=noise)
             start = time.time()
 
             critic_loss = self.update_critic(max_samples // 4, 40)
@@ -448,18 +482,21 @@ class RL(object):
             self.storage.clear()
 
             if (iterations) % 50 == 0:
-                self.vid_callback.save_video(self.model)
+                self.vid_callback.save_video(self.gpu_model)
 
             if (iterations) % 1 == 0:
                 wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": disc_loss})
 
-            if (iterations) % 5 == 0:
+            if (iterations) % 1 == 0:
                 reward_mean, reward_std = self.run_test_with_noise(num_test=2)
+                self.plot_statistics()
+                plt.savefig("test.png")
                 #print(reward_mean, reward_std)
                 wandb.log({"eval/reward_mean": reward_mean, "eval/reward_high": reward_mean+ reward_std, "eval/reward_low": reward_mean-reward_std}, )
 
             #print("update policy time", time.time() - start)
             print("iteration time", iterations, time.time() - iteration_start)
+            print()
 
             if (iterations) % 100 == 0:
                 best_model_path = self.params.log_dir + 'models/' + self.params.exp_name
@@ -471,4 +508,3 @@ class RL(object):
 
     def add_env(self, env):
         self.env_list.append(env)
-

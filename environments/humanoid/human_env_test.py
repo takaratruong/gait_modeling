@@ -4,7 +4,7 @@ from scipy.interpolate import interp1d
 import ipdb
 import os
 
-import environments.walker2d.walker2d_mujoco_env as walker2d_mujoco_env
+import environments.humanoid.humanoid_mujoco_env as mujoco_env_humanoid
 
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": 2,
@@ -13,11 +13,11 @@ DEFAULT_CAMERA_CONFIG = {
     "elevation": -20.0,
 }
 
-class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
+class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
     def __init__(
             self,
-            xml_file="walker2d.xml",
+            xml_file="humanoid.xml",
             forward_reward_weight=1.0,
             ctrl_cost_weight=1e-3,
             healthy_reward=1.0,
@@ -53,11 +53,12 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         self.d_gain = 10
 
         # Interpolation of gait reference wrt phase.
-        ref = np.loadtxt('environments/walker2d/2d_walking.txt')
+        ref = np.loadtxt('environments/humanoid/humanoid_walk_ref.txt')
 
         self.gait_cycle_time = 1
-        self.gait_ref = interp1d(np.arange(0, 11) / 10, ref, axis=0)
-        self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), ref))/.1, axis=0), axis=0)
+
+        self.gait_ref = interp1d(np.arange(0, 39) / 38, ref, axis=0)
+        #self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), ref))/.1, axis=0), axis=0)
 
         self._max_phase = 500  # 1/.002
 
@@ -79,20 +80,15 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         # for amp
         self.total_reward = 0
 
-        walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
+        mujoco_env_humanoid.MujocoEnv.__init__(self, xml_file, self.frame_skip)
         self.init_qvel[0] = 1
         self.init_qvel[1:] = 0
 
     @property
     def is_healthy(self):
-        z, angle = self.sim.data.qpos[1:3]
-
         min_z, max_z = self._healthy_z_range
-        min_angle, max_angle = self._healthy_angle_range
 
-        healthy_z = min_z < z < max_z
-        healthy_angle = min_angle < angle < max_angle
-        is_healthy = healthy_z and healthy_angle
+        is_healthy = min_z < self.data.qpos[2] < max_z
 
         return is_healthy
 
@@ -102,19 +98,13 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         return done
 
     def _get_obs(self):
-        if self.phase < 0.5:
-            position = self.sim.data.qpos.flat.copy()
-            #ipdb.set_trace()
-            velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
+        position = self.sim.data.qpos.flat.copy()
+        velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
 
-            if self._exclude_current_positions_from_observation:
-                position = position[1:]
+        if self._exclude_current_positions_from_observation:
+            position = position[1:]
 
-            observation = np.concatenate((position, velocity / 10, np.array([self.phase]))).ravel()
-
-        else:
-            observation = np.concatenate((self.sim.data.qpos[1:3], self.sim.data.qpos[6:9], self.sim.data.qpos[3:6], self.sim.data.qvel[0:3]/10,
-                self.sim.data.qvel[6:9]/10, self.sim.data.qvel[3:6]/10, np.array([self.phase - 0.5])))
+        observation = np.concatenate((position, velocity / 10, np.array([self.phase]))).ravel()
 
         return observation
 
@@ -134,8 +124,7 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
     def cntr2ref(self, cntr):
         phase = self.cntr2phase(cntr)
         gait_ref = self.gait_ref(phase)
-        gait_ref[0] += np.floor(cntr / self._max_phase) - self.gait_ref((self.offset % self._max_phase)/self._max_phase)[0]
-        gait_ref[1] += 1.25
+        gait_ref[0] += 1.23859 * np.floor(cntr / self._max_phase) - 1.23859 * self.gait_ref((self.offset % self._max_phase)/self._max_phase)[0]
         return gait_ref
 
     def get_rand_force(self):
@@ -146,18 +135,23 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
     def step(self, action):
         action = np.array(action.tolist())
         if self.phase < 0.5:
-            joint_action = action[0:6].copy()
+            joint_action = action[0:28].copy()
         else:
-            joint_action = action[[3, 4, 5, 0, 1, 2]].copy()
+            joint_action = action[[0,1,2,3,4,5,
+                                   10,11,12,13,
+                                   6,7,8,9,
+                                   21,22,23,24,25,26,27,
+                                   14,15,16,17,18,19,20]].copy()
 
-        self.sim_cntr += int(self.args.phase_action_mag * action[6]) # <----CHANGE
+        self.sim_cntr += int(self.args.phase_action_mag * action[28])
 
         ref = self.cntr2ref(self.sim_cntr + self.frame_skip)
-        joint_target = joint_action + ref[3:]  # add action to joint ref to create final joint target
+
+        joint_target = joint_action + ref[7:]  # add action to joint ref to create final joint target
 
         for _ in range(self.frame_skip):
-            joint_obs = self.sim.data.qpos[3:]
-            joint_vel_obs = self.sim.data.qvel[3:]
+            joint_obs = self.sim.data.qpos[7:]
+            joint_vel_obs = self.sim.data.qvel[6:]
 
             error = joint_target - joint_obs
             error_der = joint_vel_obs
@@ -179,18 +173,18 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
         observation = self._get_obs()
 
-        joint_ref = ref[3:]
-        joint_obs = self.sim.data.qpos[3:9]
+        joint_ref = ref[7:]
+        joint_obs = self.sim.data.qpos[7:35]
         joint_reward = np.exp(-2 * np.sum((joint_ref - joint_obs) ** 2))
 
-        pos_ref = ref[0:2]
-        pos = self.sim.data.qpos[0:2]
-        pos_reward = 10 * (1-self.sim.data.qvel[0])**2 + (pos_ref[1] - pos[1] ) ** 2
+        pos_ref = ref[0:3]
+        pos = self.sim.data.qpos[0:3]
+        pos_reward = 10 * (1-self.sim.data.qvel[0])**2 + (pos_ref[1] - pos[1]) ** 2 + (pos_ref[2] - pos[2]) ** 2
         pos_reward = np.exp(-pos_reward)
 
-        orient_ref = ref[2]
-        orient_obs = observation[1]
-        orient_reward = 2 * ((orient_ref - orient_obs) ** 2) + 5 * (self.sim.data.qvel[2] ** 2)
+        orient_ref = ref[3:7]
+        orient_obs = observation[2:6]
+        orient_reward = 2 * np.sum( (orient_ref - orient_obs) ** 2) + 5 * np.sum((self.sim.data.qvel[3:6]) ** 2)
         orient_reward = np.exp(-orient_reward)
 
         reward = 0.3*orient_reward+0.4*joint_reward+0.3*pos_reward
@@ -241,3 +235,63 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
     def get_total_reward(self):
         return self.total_reward
+
+
+
+"""
+ else:
+            observation = np.concatenate((
+                # ignore rotation for now <-- quarternion
+                self.sim.data.qpos[1:7],
+
+                # flip chest
+                np.array([-1*self.sim.data.qpos[7]]),
+                np.array([self.sim.data.qpos[8]]),
+                np.array([-1*self.sim.data.qpos[9]]),
+
+                #flip neck
+                np.array([-1*self.sim.data.qpos[10]]),
+                np.array([self.sim.data.qpos[11]]),
+                np.array([-1*self.sim.data.qpos[12]]),
+
+                #flip shoulders and elbow
+                self.sim.data.qpos[17:21],
+                self.sim.data.qpos[13:17],
+
+                #flip hip knee and ankle
+                self.sim.data.qpos[28:35],
+                self.sim.data.qpos[21:28],
+
+                # Velocities ###################
+                self.sim.data.qvel[0:3]/10,
+
+                # flip center rotation
+                np.array([-1*self.sim.data.qvel[3]/10]),
+                np.array([self.sim.data.qvel[4]/10]),
+                np.array([-1*self.sim.data.qvel[5]/10]),
+
+                # flip chest
+                np.array([-1*self.sim.data.qpos[6]/10]),
+                np.array([self.sim.data.qpos[7]/10]),
+                np.array([-1*self.sim.data.qpos[8]/10]),
+
+                # flip neck
+                np.array([-self.sim.data.qpos[9]/10]),
+                np.array([self.sim.data.qpos[10]/10]),
+                np.array([-self.sim.data.qpos[11]/10]),
+
+                # flip shoulders and elbow
+                self.sim.data.qpos[16:20]/10,
+                self.sim.data.qpos[12:16]/10,
+
+                # flip hip knee and ankle
+                self.sim.data.qpos[20:27]/10,
+                self.sim.data.qpos[27:35]/10,
+
+                np.array([self.phase - 0.5])
+            ))#.ravel()
+
+            #observation = np.concatenate((self.sim.data.qpos[1:3], self.sim.data.qpos[6:9], self.sim.data.qpos[3:6], self.sim.data.qvel[0:3]/10,
+            #    self.sim.data.qvel[6:9]/10, self.sim.data.qvel[3:6]/10, np.array([self.phase - 0.5])))
+
+"""

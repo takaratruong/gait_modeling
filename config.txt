@@ -1,13 +1,13 @@
-exp_name = fg
+exp_name = traj
 env = walker2d
 
-frame_skip = 20 #12
+frame_skip = 15 #12
 train_mode = standard
 num_epochs = 10
 num_envs = 2
 
-num_steps = 300
-#rand_perturbation = True
+num_steps = 500
+rand_perturbation = True
 #const_perturbation = True
 perturbation_force = 90
 min_perturbation_force_mag = 70

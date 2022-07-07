@@ -7,7 +7,7 @@ class VideoCallback(BaseCallback):
         self.eval_freq = eval_freq
         self.vid_env = vid_env
     def _on_step(self):
-        if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
+        if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0: # <-- fix later
             for _ in range(4):
                 obs = self.vid_env.reset()
                 done = False
@@ -28,7 +28,7 @@ class AMPVideoCallback():
             obs = self.vid_env.reset()
             done = False
             while not done:
-                action =  model.sample_best_actions(torch.tensor(obs).float()).detach().numpy()
+                action = model.sample_best_actions(torch.tensor(obs).float().cuda()).detach().cpu().numpy()
                 obs, _, done, _ = self.vid_env.step(action)
 
         self.vid_env.close()

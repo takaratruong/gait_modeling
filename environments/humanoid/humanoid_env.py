@@ -12,7 +12,6 @@ DEFAULT_CAMERA_CONFIG = {
     "elevation": -10.0,
 }
 
-
 def mass_center(model, data):
     mass = np.expand_dims(model.body_mass, axis=1)
     xpos = data.xipos
@@ -55,17 +54,17 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
     | idx | qpos                                                                                                     | Min  | Max | Name (in corresponding XML file) | Joint | Unit                       |
     | --- | --------------------------------------------------------------------------------------------------------------- | ---- | --- | -------------------------------- | ----- | -------------------------- |
-    | 0   | x-coordinate of root                                                                              | -Inf | Inf | root                             | free  | position (m)               |
-    | 1   | y-coordinate of root                                                                              | -Inf | Inf | root                             | free  | angle (rad)                |
-    | 2   | z-coordinate of root                                                                              | -Inf | Inf | root                             | free  | angle (rad)                |
-    | 3   | quart[0] of root                                                                             | -Inf | Inf | root                             | free  | angle (rad)                |
-    | 4   | quart[1] of root                                                                           | -Inf | Inf | root                             | free  | angle (rad)                |
-    | 5   | quart[2] of root                                                                         | -Inf | Inf | abdomen_z                        | hinge | angle (rad)                |
-    | 6   | quart[3] of root                                                                        | -Inf | Inf | abdomen_y                        | hinge | angle (rad)                |
+    | 0   | x-coordinate of root                                                                                     | -Inf | Inf | root                             | free  | position (m)               |
+    | 1   | y-coordinate of root                                                                                  | -Inf | Inf | root                             | free  | angle (rad)                |
+    | 2   | z-coordinate of root                                                                                  | -Inf | Inf | root                             | free  | angle (rad)                |
+    | 3   | quart[0] of root                                                                                     | -Inf | Inf | root                             | free  | angle (rad)                |
+    | 4   | quart[1] of root                                                                                     | -Inf | Inf | root                             | free  | angle (rad)                |
+    | 5   | quart[2] of root                                                                                      | -Inf | Inf | abdomen_z                        | hinge | angle (rad)                |
+    | 6   | quart[3] of root                                                                                     | -Inf | Inf | abdomen_y                        | hinge | angle (rad)                |
     | 7   | x-euler_angle (sagittal plane) between chest and abdomen                                                                        | -Inf | Inf | abdomen_x                        | hinge | angle (rad)                |
-    | 8   | y-euler_angle (coronal plane) between chest and abdomen                                            | -Inf | Inf | right_hip_x                      | hinge | angle (rad)                |
+    | 8   | y-euler_angle (coronal plane) between chest and abdomen                                             | -Inf | Inf | right_hip_x                      | hinge | angle (rad)                |
     | 9   | z-euler_angle (transverse plane) between Neck and Chest                                             | -Inf | Inf | right_hip_z                      | hinge | angle (rad)                |
-    | 10  | x-euler_angle (sagittal plane) between Neck and Chest                                              | -Inf | Inf | right_hip_y                      | hinge | angle (rad)                |
+    | 10  | x-euler_angle (sagittal plane) between Neck and Chest                                               | -Inf | Inf | right_hip_y                      | hinge | angle (rad)                |
     | 11  | y-euler_angle (coronal plane) between Neck and Chest
     | Parameter                                    | Type      | Default          | Description                                                                                                                                                               |
     | -------------------------------------------- | --------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

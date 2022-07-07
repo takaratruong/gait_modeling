@@ -1,17 +1,13 @@
-exp_name = amp_newObs_recovery
+exp_name = human
 env = walker2d
 train_mode = standard
 
 frame_skip = 10
 
-#num_steps = 100
-#num_envs = 50
+num_steps = 800
+num_envs = 20
 
-num_steps = 500
-num_envs = 10
-
-#rand_perturbation = True
-const_perturbation = True
+rand_perturbation = True
 perturbation_force = 75
 min_perturbation_force_mag = 50
 

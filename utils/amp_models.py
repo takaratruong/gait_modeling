@@ -157,7 +157,11 @@ class Discriminator(nn.Module):
 
 
     def compute_disc(self, state, next_state):
+        #print(state.shape)
+        #print(next_state.shape)
         disc_input = torch.cat([state, next_state], dim=-1)
+        #print(disc_input.shape)
+
         x = F.relu(self.disc_fcs[0](disc_input))
         for i in range(len(self.hidden_layer)-1):
             x = F.relu(self.disc_fcs[i+1](x))
