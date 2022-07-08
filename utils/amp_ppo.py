@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import time
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
 import pickle
 import torch.optim as optim
@@ -14,8 +14,8 @@ from scipy.interpolate import interp1d
 #os.environ["OMP_NUM_THREADS"] = "10"
 
 
-import matplotlib
-matplotlib.use('TkAgg')
+#import matplotlib
+#matplotlib.use('TkAgg')
 
 from utils.amp_models import ActorCriticNet, Discriminator
 
@@ -105,9 +105,9 @@ class RL(object):
 
         self.noisy_test_mean = []
         self.noisy_test_std = []
-        self.fig = plt.figure()
+        #self.fig = plt.figure()
         self.lr = self.params.lr
-        plt.show(block=False)
+        #plt.show(block=False)
 
         self.test_list = []
         self.noisy_test_list = []
@@ -183,8 +183,8 @@ class RL(object):
 
     def plot_statistics(self):
 
-        plt.clf()
-        ax = self.fig.add_subplot(121)
+        #plt.clf()
+        #ax = self.fig.add_subplot(121)
         # ax2 = self.fig.add_subplot(122)
         low = []
         high = []
@@ -197,14 +197,14 @@ class RL(object):
             noisy_low.append(self.noisy_test_mean[i] - self.noisy_test_std[i])
             noisy_high.append(self.noisy_test_mean[i] + self.noisy_test_std[i])
             index.append(i)
-        plt.xlabel('iterations')
-        plt.ylabel('average rewards')
+        #plt.xlabel('iterations')
+        #plt.ylabel('average rewards')
         # ax.plot(self.test_mean, 'b')
-        ax.plot(self.noisy_test_mean, 'g')
+        #ax.plot(self.noisy_test_mean, 'g')
         # ax.fill_between(index, low, high, color='cyan')
-        ax.fill_between(index, noisy_low, noisy_high, color='r')
+        #ax.fill_between(index, noisy_low, noisy_high, color='r')
         # ax.plot(map(sub, test_mean, test_std))
-        self.fig.canvas.draw()
+        #self.fig.canvas.draw()
         # plt.show()
 
 
@@ -485,10 +485,10 @@ class RL(object):
             if (iterations) % 1 == 0:
                 wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": -1})
 
-            if (iterations) % 1 == 0:
+            if (iterations) % 5 == 0:
                 reward_mean, reward_std = self.run_test_with_noise(num_test=2)
                 self.plot_statistics()
-                plt.savefig("test.png")
+                #plt.savefig("test.png")
                 #print(reward_mean, reward_std)
                 wandb.log({"eval/reward_mean": reward_mean, "eval/reward_high": reward_mean+ reward_std, "eval/reward_low": reward_mean-reward_std}, )
 
