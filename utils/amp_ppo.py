@@ -293,16 +293,17 @@ class RL(object):
     """
     def load_motion_data(self):
         #self.motion_data = np.loadtxt("environments/walker2d/2d_walking.txt")
-        self.expert_ref = np.load('expert_motion.npy')
+        #self.expert_ref = np.load('expert_motion.npy')
 
-        self.ref = np.loadtxt("environments/walker2d/2d_walking.txt")
-        self.gait_ref = interp1d(np.arange(0, 11) / 10, self.ref, axis=0)
-        self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), self.ref)) / .1, axis=0), axis=0)
+        #self.ref = np.loadtxt("environments/walker2d/2d_walking.txt")
+        #self.gait_ref = interp1d(np.arange(0, 11) / 10, self.ref, axis=0)
+        #self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), self.ref)) / .1, axis=0), axis=0)
 
         #self.motion_data[:, 3:5] *= -1
         #self.motion_data[:, 6:8] *= -1
         #self.motion_data[:, 1] += 1.5
 
+        pass
 
     """FIX"""
     def sample_motion_data(self, phase_cnt):
