@@ -79,8 +79,8 @@ class MujocoEnv(gym.Env):
         #bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
         #low, high = bounds.T
         #28 actuators + 1 phase
-        low = np.array([-.3 for _ in range(29)]).astype('float32')
-        high = np.array([.3 for _ in range(29)]).astype('float32')
+        low = np.array([-.5 for _ in range(28)] + [-1]).astype('float32')
+        high = np.array([.5 for _ in range(28)] + [1]).astype('float32')
 
         self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
         return self.action_space
@@ -157,7 +157,7 @@ class MujocoEnv(gym.Env):
 
             if camera_id is None and camera_name in self.model._camera_name2id:
                 camera_id = self.model.camera_name2id(camera_name)
-            self._get_viewer(mode).render(width, height, camera_id=camera_id)
+            self._get_viewer(mode).render(width, height, camera_id=0)
 
         if mode == "rgb_array":
             # window size used for old mujoco-py:

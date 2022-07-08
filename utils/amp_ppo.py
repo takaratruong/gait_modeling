@@ -237,8 +237,6 @@ class RL(object):
 
         state = start_state
 
-        print(state.shape)
-
         total_reward1 = 0
         total_reward2 = 0
         calculate_done1 = False
@@ -265,7 +263,7 @@ class RL(object):
 
             next_states.append(next_state.clone())
 
-            reward = self.discriminator.compute_disc_reward(self.feature_extractor(state), self.feature_extractor(next_state)) #* 0.0 + 1. * reward
+            reward = reward# self.discriminator.compute_disc_reward(self.feature_extractor(state), self.feature_extractor(next_state)) #* 0.0 + 1. * reward
 
             rewards.append(reward.clone())
 
@@ -478,14 +476,14 @@ class RL(object):
 
             critic_loss = self.update_critic(max_samples // 4, 40)
             actor_loss = self.update_actor(max_samples // 4, 40)
-            disc_loss = self.update_discriminator(max_samples // 4, 40) #commented out
+            #disc_loss = self.update_discriminator(max_samples // 4, 40) #commented out
             self.storage.clear()
 
             if (iterations) % 50 == 0:
                 self.vid_callback.save_video(self.gpu_model)
 
             if (iterations) % 1 == 0:
-                wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": disc_loss})
+                wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": -1})
 
             if (iterations) % 1 == 0:
                 reward_mean, reward_std = self.run_test_with_noise(num_test=2)

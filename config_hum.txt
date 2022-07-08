@@ -1,19 +1,16 @@
 exp_name = human
-env = walker2d
+env = humanoid
 train_mode = standard
 
-frame_skip = 10
+frame_skip = 4
 
-num_steps = 800
-num_envs = 20
+num_envs = 50
+max_ep_time = 4
+num_steps = 30
 
-rand_perturbation = True
-perturbation_force = 75
-min_perturbation_force_mag = 50
-
-phase_action_mag = 20
+phase_action_mag = .04 # percent of gait change per sim step that agent can forward/backward
 
 orient_weight = .3
-joint_weight =.4
+joint_weight = .4
 pos_weight = .3
 

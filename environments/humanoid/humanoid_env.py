@@ -6,7 +6,7 @@ import ipdb
 from scipy.interpolate import interp1d
 
 DEFAULT_CAMERA_CONFIG = {
-    "trackbodyid": 1,
+    "trackbodyid": 3,
     "distance": 6.0,
     "lookat": np.array((0.0, 0.0, 2.0)),
     "elevation": -10.0,

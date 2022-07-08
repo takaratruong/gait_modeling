@@ -12,6 +12,37 @@ DEFAULT_CAMERA_CONFIG = {
     "lookat": np.array((0.0, 0.0, 1.15)),
     "elevation": -20.0,
 }
+PARAMS_KP_KD = {"chest": [1000, 100], "neck": [100, 10], "right_shoulder": [400, 40], "right_elbow": [300, 30],
+        "left_shoulder": [400, 40], "left_elbow": [300, 30], "right_hip": [500, 50], "right_knee": [500, 50],
+        "right_ankle": [400, 40], "left_hip": [500, 50], "left_knee": [500, 50], "left_ankle": [400, 40]}
+KP_GAIN = np.array(
+         [1000, 1000, 1000,  # chest
+          100, 100, 100,  # neck
+          400, 400, 400,  # shoulder
+          300,  # elbow
+          400, 400, 400,  # shoulder
+          300,  #elbow
+          500, 500, 500,  #hip
+          500,  # knee
+          400, 400, 400, # ankle
+          500, 500, 500,  # hip
+          500,  # knee
+          400, 400, 400 # ankle
+          ])
+KD_GAIN = np.array(
+         [100, 100, 100,  # chest
+          10, 10, 10,  # neck
+          40, 40, 40,  # shoulder
+          30,  # elbow
+          40, 40, 40,  # shoulder
+          30,  #elbow
+          50, 50, 50,  #hip
+          50,  # knee
+          40, 40, 40, # ankle
+          50, 50, 50,  # hip
+          50,  # knee
+          40, 40, 40 # ankle
+          ])
 
 class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
@@ -22,7 +53,7 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
             ctrl_cost_weight=1e-3,
             healthy_reward=1.0,
             terminate_when_unhealthy=True,
-            healthy_z_range=(0.8, 2.0),
+            healthy_z_range=(0.7, 10.0),
             healthy_angle_range=(-1.0, 1.0),
             reset_noise_scale=5e-3,
             exclude_current_positions_from_observation=True,
@@ -55,12 +86,12 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         # Interpolation of gait reference wrt phase.
         ref = np.loadtxt('environments/humanoid/humanoid_walk_ref.txt')
 
-        self.gait_cycle_time = 1
+        self.gait_cycle_time = 38 * 0.0333320000
 
         self.gait_ref = interp1d(np.arange(0, 39) / 38, ref, axis=0)
         #self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), ref))/.1, axis=0), axis=0)
 
-        self._max_phase = 500  # 1/.002
+        self._max_phase = 38 * 0.0333320000/.016 # 500 # 1/.002
 
         self.sim_cntr = 0
         self.offset = int(np.random.randint(0, self._max_phase / 10) * 10)
@@ -98,13 +129,68 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         return done
 
     def _get_obs(self):
-        position = self.sim.data.qpos.flat.copy()
-        velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
+        if self.phase < .5:
+            position = self.sim.data.qpos.flat.copy()
+            position = position[1:]
+            velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
 
-        if self._exclude_current_positions_from_observation:
+            observation = np.concatenate((position, velocity / 10, np.array([self.phase]))).ravel()
+        else:
+            position = self.sim.data.qpos.flat.copy()
             position = position[1:]
 
-        observation = np.concatenate((position, velocity / 10, np.array([self.phase]))).ravel()
+            velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
+
+            flipped_pos = np.concatenate((
+                position[0:6],  # x,y, quart
+
+                # flip chest
+                np.array([-1 * position[6]]),
+                np.array([position[7]]),
+                np.array([-1 * position[8]]),
+
+                # flip neck
+                np.array([-1 * position[9]]),
+                np.array([position[10]]),
+                np.array([-1 * position[11]]),
+
+                # flip shoulders and elbow
+                position[16:20],
+                position[12:16],
+
+                # flip hip knee and ankle
+                position[27:35],
+                position[20:27],
+            ))
+
+            flipped_vel = np.concatenate((
+                velocity[0:3] / 10,
+
+                # flip center rotation
+                np.array([-1 * velocity[3] / 10]),
+                np.array([velocity[4] / 10]),
+                np.array([-1 * velocity[5] / 10]),
+
+                # flip chest
+                np.array([-1 * velocity[6] / 10]),
+                np.array([velocity[7] / 10]),
+                np.array([-1 * velocity[8] / 10]),
+
+                # flip neck
+                np.array([-velocity[9] / 10]),
+                np.array([velocity[10] / 10]),
+                np.array([-velocity[11] / 10]),
+
+                # flip shoulders and elbow
+                velocity[16:20] / 10,
+                velocity[12:16] / 10,
+
+                # flip hip knee and ankle
+                velocity[27:35] / 10,
+                velocity[20:27] / 10,
+            ))
+
+            observation = np.concatenate((flipped_pos, flipped_vel,  np.array([self.phase - 0.5])))
 
         return observation
 
@@ -124,7 +210,7 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
     def cntr2ref(self, cntr):
         phase = self.cntr2phase(cntr)
         gait_ref = self.gait_ref(phase)
-        gait_ref[0] += 1.23859 * np.floor(cntr / self._max_phase) - 1.23859 * self.gait_ref((self.offset % self._max_phase)/self._max_phase)[0]
+        gait_ref[0] += 1.23859 * np.floor(( self.sim_cntr + cntr) / self._max_phase) #- self.gait_ref((self.offset % self._max_phase)/self._max_phase)[0]
         return gait_ref
 
     def get_rand_force(self):
@@ -143,7 +229,14 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
                                    21,22,23,24,25,26,27,
                                    14,15,16,17,18,19,20]].copy()
 
-        self.sim_cntr += int(self.args.phase_action_mag * action[28])
+        #self.sim_cntr += int(self.args.phase_action_mag * action[28])
+
+
+        """"""
+        phase_temp= (self.data.time % self.gait_cycle_time)/self.gait_cycle_time
+        pos_temp = self.gait_ref(phase_temp)
+        pos_temp[0] += 1.23859 * np.floor(self.data.time / self.gait_cycle_time)
+        """"""""
 
         ref = self.cntr2ref(self.sim_cntr + self.frame_skip)
 
@@ -152,13 +245,19 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         for _ in range(self.frame_skip):
             joint_obs = self.sim.data.qpos[7:]
             joint_vel_obs = self.sim.data.qvel[6:]
+            print("----------")
+            print(joint_obs)
+            print(joint_target)
 
             error = joint_target - joint_obs
+
+            print("error", error)
             error_der = joint_vel_obs
 
-            torque = self.p_gain * error - self.d_gain * error_der
+            #torque = KP_GAIN * error - KD_GAIN * error_der
+            torque = 10000 * error - 10 * error_der
+            self.do_simulation(torque, 1)
 
-            self.do_simulation(torque/100, 1)
             self.sim_cntr += 1
 
             # Apply force for specified duration
@@ -170,6 +269,8 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
                     self.sim.data.qfrc_applied[0] = 0
                     self.impulse_time_start = self.data.time
                     self.force = self.args.perturbation_force if self.args.const_perturbation else self.get_rand_force()
+
+        self.set_state(ref, self.init_qvel)
 
         observation = self._get_obs()
 
@@ -184,10 +285,10 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         orient_ref = ref[3:7]
         orient_obs = observation[2:6]
-        orient_reward = 2 * np.sum( (orient_ref - orient_obs) ** 2) + 5 * np.sum((self.sim.data.qvel[3:6]) ** 2)
+        orient_reward = 2 * np.sum((orient_ref - orient_obs) ** 2) + 5 * np.sum((self.sim.data.qvel[3:6]) ** 2)
         orient_reward = np.exp(-orient_reward)
 
-        reward = 0.3*orient_reward+0.4*joint_reward+0.3*pos_reward
+        reward = self.args.orient_weight * orient_reward + self.args.joint_weight * joint_reward + self.args.pos_weight * pos_reward
 
         #for amp
         self.total_reward += reward
@@ -204,8 +305,9 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self.elapsed_steps = 0
-        self.sim_cntr = 0
         self.offset = int(np.random.randint(0, self._max_phase / 10) * 10)
+        self.sim_cntr = self.offset
+
         qpos = self.cntr2ref(self.sim_cntr)
 
         self.impulse_delay = 5 + np.random.uniform(0, self.gait_cycle_time)
@@ -235,63 +337,3 @@ class Humanoid_test_env(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
     def get_total_reward(self):
         return self.total_reward
-
-
-
-"""
- else:
-            observation = np.concatenate((
-                # ignore rotation for now <-- quarternion
-                self.sim.data.qpos[1:7],
-
-                # flip chest
-                np.array([-1*self.sim.data.qpos[7]]),
-                np.array([self.sim.data.qpos[8]]),
-                np.array([-1*self.sim.data.qpos[9]]),
-
-                #flip neck
-                np.array([-1*self.sim.data.qpos[10]]),
-                np.array([self.sim.data.qpos[11]]),
-                np.array([-1*self.sim.data.qpos[12]]),
-
-                #flip shoulders and elbow
-                self.sim.data.qpos[17:21],
-                self.sim.data.qpos[13:17],
-
-                #flip hip knee and ankle
-                self.sim.data.qpos[28:35],
-                self.sim.data.qpos[21:28],
-
-                # Velocities ###################
-                self.sim.data.qvel[0:3]/10,
-
-                # flip center rotation
-                np.array([-1*self.sim.data.qvel[3]/10]),
-                np.array([self.sim.data.qvel[4]/10]),
-                np.array([-1*self.sim.data.qvel[5]/10]),
-
-                # flip chest
-                np.array([-1*self.sim.data.qpos[6]/10]),
-                np.array([self.sim.data.qpos[7]/10]),
-                np.array([-1*self.sim.data.qpos[8]/10]),
-
-                # flip neck
-                np.array([-self.sim.data.qpos[9]/10]),
-                np.array([self.sim.data.qpos[10]/10]),
-                np.array([-self.sim.data.qpos[11]/10]),
-
-                # flip shoulders and elbow
-                self.sim.data.qpos[16:20]/10,
-                self.sim.data.qpos[12:16]/10,
-
-                # flip hip knee and ankle
-                self.sim.data.qpos[20:27]/10,
-                self.sim.data.qpos[27:35]/10,
-
-                np.array([self.phase - 0.5])
-            ))#.ravel()
-
-            #observation = np.concatenate((self.sim.data.qpos[1:3], self.sim.data.qpos[6:9], self.sim.data.qpos[3:6], self.sim.data.qvel[0:3]/10,
-            #    self.sim.data.qvel[6:9]/10, self.sim.data.qvel[3:6]/10, np.array([self.phase - 0.5])))
-
-"""
