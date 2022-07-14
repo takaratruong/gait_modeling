@@ -36,10 +36,13 @@ p.add('--gait_policy', type=str)  # Experiment folder name defining the gait pol
 # Perturbation Parameters
 p.add('-rp',  '--rand_perturbation', action='store_true')  # Use random perturbation
 p.add('-cp',  '--const_perturbation', action='store_true')  # Use constant perturbation (if neither then no impacts)
+p.add('-mp',  '--midstance_perturbation', action='store_true')  # Use random perturbation
+
 p.add('-p_frc', '--perturbation_force', type=float, default=90)
+p.add('-p_dir', '--perturbation_dir', type=int, default=1)
 p.add('-p_frc_min', '--min_perturbation_force_mag', type=float, default=70)
-p.add('-p_dur', '--perturbation_duration', type=float, default=.2)
-p.add('-p_del', '--perturbation_delay', type=float, default=3.5)
+p.add('-p_dur', '--perturbation_duration', type=float, default=.3)
+p.add('-p_del', '--perturbation_delay', type=float, default=3.0)
 
 # Reward/Action weights
 p.add('--phase_action_mag', type=float, default=50)
@@ -66,8 +69,13 @@ POLICY_KWARGS = dict(log_std_init=-2.0, ortho_init=True, activation_fn=torch.nn.
                      net_arch=[dict(pi=[128, 128], vf=[128, 128])])
 
 def load_args():
-    return p.parse_args()
+    args = p.parse_args()
 
+    args.sim_perturbation = False
+    if args.rand_perturbation or args.const_perturbation:
+        args.sim_perturbation = True
+
+    return args
 
 if __name__ == "__main__":
     options = p.parse_args()

@@ -3,19 +3,15 @@ from gym import utils
 from scipy.interpolate import interp1d
 import ipdb
 import os
+from scipy.spatial.transform import Rotation as R
+import mujoco_py
+import time
+
+
 
 import environments.humanoid.humanoid_mujoco_env as mujoco_env_humanoid
+from environments.humanoid.humanoid_utils import flip_action, flip_position, flip_velocity
 
-"""
-
-
-DEFAULT_CAMERA_CONFIG = {
-    "trackbodyid": 3,
-    "distance": 4.0,
-    "lookat": np.array((0.0, 0.0, 1.15)),
-    "elevation": -20.0,
-}
-"""
 
 class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
@@ -54,6 +50,18 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         self.total_reward = 0
 
+        # force application
+        self.force = self.get_force()
+
+        # MIDSTANCE STUFF
+        self.midstance_impact_time = -1
+        self.midstance_flag = False
+        self.midstance_flag2 = False
+        self.midstance_impact_applied = False
+        self.record_once_flag = False
+        self.post_impact_left_ankle =None
+        self.post_impact_right_ankle =None
+
         mujoco_env_humanoid.MujocoEnv.__init__(self, xml_file, self.frame_skip)
 
         self.init_qvel[0] = 1
@@ -74,12 +82,15 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         pos_ref = ref[0:3]
         pos = self.sim.data.qpos[0:3]
-        pos_reward = 10 * ( 1.23859/self.gait_cycle_time  - self.sim.data.qvel[0]) ** 2 + (pos_ref[1] - pos[1]) ** 2 + (pos_ref[2] - pos[2]) ** 2
+        pos_reward = 10 * (1.23859 / self.gait_cycle_time - self.sim.data.qvel[0]) ** 2 + 2 * (
+                    1.23859 / self.gait_cycle_time - np.sum(self.sim.data.get_body_xvelp('neck')[0])) ** 2 + (
+                                 pos_ref[1] - pos[1]) ** 2 + (pos_ref[2] - pos[2]) ** 2
         pos_reward = np.exp(-pos_reward)
 
         orient_ref = ref[3:7]
-        orient_obs = self.sim.data.qpos[3:7]
-        orient_reward = 2 * np.sum((orient_ref - orient_obs) ** 2) + 5 * np.sum((self.sim.data.qvel[3:6]) ** 2)
+        orient_obs = obs[2:6]
+        orient_reward = 2 * np.sum((orient_ref - orient_obs) ** 2) + 5 * np.sum(
+            (self.sim.data.qvel[3:6]) ** 2)  # <-- fix later
         orient_reward = np.exp(-orient_reward)
 
         reward = self.args.orient_weight * orient_reward + self.args.joint_weight * joint_reward + self.args.pos_weight * pos_reward
@@ -92,7 +103,7 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         return done
 
     def _get_obs(self):
-        if self.phase < .5:
+        if self.phase <= .5:
             position = self.sim.data.qpos.flat.copy()
             position = position[1:]
             velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
@@ -101,59 +112,12 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         else:
             position = self.sim.data.qpos.flat.copy()
             position = position[1:]
+            flipped_pos = flip_position(position)
 
             velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
+            flipped_vel = flip_velocity(velocity)
 
-            flipped_pos = np.concatenate((
-                position[0:6],  # x,y, quart
-
-                # flip chest
-                np.array([-1 * position[6]]),
-                np.array([position[7]]),
-                np.array([-1 * position[8]]),
-
-                # flip neck
-                np.array([-1 * position[9]]),
-                np.array([position[10]]),
-                np.array([-1 * position[11]]),
-
-                # flip shoulders and elbow
-                position[16:20],
-                position[12:16],
-
-                # flip hip knee and ankle
-                position[27:35],
-                position[20:27],
-            ))
-
-            flipped_vel = np.concatenate((
-                velocity[0:3] / 10,
-
-                # flip center rotation
-                np.array([-1 * velocity[3] / 10]),
-                np.array([velocity[4] / 10]),
-                np.array([-1 * velocity[5] / 10]),
-
-                # flip chest
-                np.array([-1 * velocity[6] / 10]),
-                np.array([velocity[7] / 10]),
-                np.array([-1 * velocity[8] / 10]),
-
-                # flip neck
-                np.array([-velocity[9] / 10]),
-                np.array([velocity[10] / 10]),
-                np.array([-velocity[11] / 10]),
-
-                # flip shoulders and elbow
-                velocity[16:20] / 10,
-                velocity[12:16] / 10,
-
-                # flip hip knee and ankle
-                velocity[27:35] / 10,
-                velocity[20:27] / 10,
-            ))
-
-            observation = np.concatenate((flipped_pos, flipped_vel, np.array([self.phase - 0.5])))
+            observation = np.concatenate((flipped_pos, flipped_vel / 10, np.array([self.phase - .5]))).ravel()
 
         return observation
 
@@ -181,21 +145,51 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         return gait_ref
 
-    def get_rand_force(self):
-        neg_force = np.random.randint(-abs(self.args.perturbation_force), -abs(self.args.min_perturbation_force_mag))
-        pos_force = np.random.randint(abs(self.args.min_perturbation_force_mag), abs(self.args.perturbation_force))
-        return neg_force if np.random.rand() <= .5 else pos_force
+    def get_force(self):
+        force = self.args.perturbation_force
+        dir = self.args.perturbation_dir
+        if self.args.rand_perturbation:
+            neg_force = np.random.randint(-abs(self.args.perturbation_force),
+                                          -abs(self.args.min_perturbation_force_mag))
+            pos_force = np.random.randint(abs(self.args.min_perturbation_force_mag), abs(self.args.perturbation_force))
+            force = neg_force if np.random.rand() <= .5 else pos_force
+
+            dir = np.random.randint(2)
+
+        return (dir, force)
+
+    def apply_force(self, force):
+        dir = force[0]
+        mag = force[1]
+        self.sim.data.qfrc_applied[dir] = mag
+
+    def zero_applied_force(self):
+        self.sim.data.qfrc_applied[0] = 0
+        self.sim.data.qfrc_applied[1] = 0
+
+    def check_midstance(self):
+        left_foot_x = self.sim.data.get_body_xpos('left_ankle')[0]
+        right_foot_x = self.sim.data.get_body_xpos('right_ankle')[0]
+        right_foot_xdot = self.sim.data.get_body_xvelp('right_ankle')[0]
+
+
+        #print(left_foot_x, right_foot_x)
+        mid_val = False
+        if right_foot_x >= left_foot_x and right_foot_xdot >= 0 and self.midstance_flag is False:
+            mid_val = True
+            self.midstance_impact_time = self.data.time
+            self.force = self.get_force()
+            self.midstance_flag = True
+
+
+        #print()
+
+        return mid_val
 
     def step(self, action):
-        action = np.array(action.tolist())
-        if self.phase < 0.5:
-            joint_action = action[0:28]
-        else:
-            joint_action = action[[0, 1, 2, 3, 4, 5,
-                                   10, 11, 12, 13,
-                                   6, 7, 8, 9,
-                                   21, 22, 23, 24, 25, 26, 27,
-                                   14, 15, 16, 17, 18, 19, 20]]
+        action = np.array(action.tolist()).copy()
+
+        joint_action = action[0:28] if self.phase <= .5 else flip_action(action[0:28])
 
         phase_action = self.args.phase_action_mag * action[28]
 
@@ -212,32 +206,88 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
             torque = 100 * error - 10 * error_der
 
-            self.do_simulation(torque/10, 1)
+            self.do_simulation(torque / 10, 1)
 
-        #self.set_state(self.target_reference, self.init_qvel)
+            if self.args.sim_perturbation:
+                impact_timing = self.data.time % self.args.perturbation_delay
+                if impact_timing >= 0 and impact_timing <= self.args.perturbation_duration and self.data.time >= self.args.perturbation_delay:
+                    self.apply_force(self.force)
+                else:
+                    self.zero_applied_force()
+                    self.force = self.get_force()
+            #print(self.data.time)
+
+            if self.args.midstance_perturbation:
+                if self.data.time > self.args.perturbation_delay:
+
+                    if self.data.get_body_xpos('right_ankle')[0] < self.data.get_body_xpos('left_ankle')[0]:
+                        self.midstance_flag2 = True
+
+                    if self.midstance_flag2:
+                        self.check_midstance()
+
+                    if self.data.time <= self.midstance_impact_time + self.args.perturbation_duration:
+                        self.apply_force(self.force)
+                        self.midstance_impact_applied = True
+                    else:
+                        self.zero_applied_force()
+
+            if self.midstance_impact_applied:
+                for i in range(self.data.ncon):
+                    contact = self.data.contact[i]
+
+                    if self.model.geom_id2name(contact.geom2) =="right_ankle":
+
+                        if self.record_once_flag is False:
+                            #ipdb.set_trace()
+
+                            self.record_once_flag = True
+                            self.post_impact_left_ankle = self.data.get_body_xpos('left_ankle')[0:2].copy()
+                            self.post_impact_right_ankle = self.data.get_body_xpos('right_ankle')[0:2].copy()
+
+        # self.set_state(self.target_reference, self.init_qvel)
 
         observation = self._get_obs()
-        reward = self.calc_reward(observation, self.target_reference)
 
+        # print(self.sim.data.get_body_xvelp('neck'))
+        reward = self.calc_reward(observation, self.target_reference)
         self.total_reward += reward
 
         done = self.done
         info = {}
+        if done:
+            info['is_healthy'] = self.is_healthy
+            info['left_ankle'] = self.post_impact_left_ankle
+            info['right_ankle'] = self.post_impact_right_ankle
 
         if self.data.time >= self.max_ep_time:
-            info["TimeLimit.truncated"] = not done
+            info['is_healthy'] = self.is_healthy
+            info['left_ankle'] = self.post_impact_left_ankle
+            info['right_ankle'] = self.post_impact_right_ankle
+        #    info["TimeLimit.truncated"] = not done
             done = True
 
         return observation, reward, done, info
 
     def reset_model(self):
-        self.total_reward = 0
         self.action_phase_offset = 0
         self.initial_phase_offset = np.random.randint(0, 50) / 50
 
         qpos = self.gait_ref(self.phase)
-
         self.set_state(qpos, self.init_qvel)
+
+        self.total_reward = 0
+        self.force = self.get_force()
+
+        self.midstance_impact_time = -1
+        self.midstance_flag = False
+        self.midstance_flag2 = False
+        self.midstance_impact_applied = False
+        self.record_once_flag = False
+        self.post_impact_left_ankle =None
+        self.post_impact_right_ankle =None
+
+
 
         observation = self._get_obs()
         return observation
@@ -250,22 +300,3 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
     def get_total_reward(self):
         return self.total_reward
-
-"""
-  
-
-        joint_ref = ref[7:]
-        joint_obs = self.sim.data.qpos[7:35]
-        joint_reward = np.exp(-2 * np.sum((joint_ref - joint_obs) ** 2))
-
-        pos_ref = ref[0:3]
-        pos = self.sim.data.qpos[0:3]
-        pos_reward = 10 * (1 - self.sim.data.qvel[0]) ** 2 + (pos_ref[1] - pos[1]) ** 2 + (pos_ref[2] - pos[2]) ** 2
-        pos_reward = np.exp(-pos_reward)
-        
-        orient_ref = ref[3:7]
-        orient_obs = self.sim.data.qpos[3:7]
-        orient_reward = 2 * np.sum((orient_ref - orient_obs) ** 2) + 5 * np.sum((self.sim.data.qvel[3:6]) ** 2)
-        orient_reward = np.exp(-orient_reward)
-        
-"""

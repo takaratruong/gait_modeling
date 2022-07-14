@@ -1,16 +1,31 @@
-exp_name = human
+exp_name = human_2
 env = humanoid
 train_mode = standard
 
 frame_skip = 4
 
 num_envs = 50
-max_ep_time = 4
-num_steps = 30
+max_ep_time = 12
+num_steps = 100
 
 phase_action_mag = .04 # percent of gait change per sim step that agent can forward/backward
-
 orient_weight = .3
 joint_weight = .4
 pos_weight = .3
 
+#const_perturbation = True
+#rand_perturbation = True
+midstance_perturbation = True
+
+#min_perturbation_force_mag = 110.363 # 25%
+
+perturbation_force = -44.0
+# .5 220.75
+# .4 176.58
+# .3 132.44
+# .2 88.29
+# .1 44.14
+
+perturbation_dir = 1
+
+perturbation_delay = 4

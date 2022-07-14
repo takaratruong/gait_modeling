@@ -8,6 +8,7 @@ from utils.amp_ppo import RL
 from environments.walker2d.walker2d_env import WalkerEnv
 from environments.humanoid.human_env_test2 import Humanoid_test_env2
 from environments.humanoid.human_env_test import Humanoid_test_env
+import ipdb
 
 import time
 
@@ -28,7 +29,9 @@ if __name__ == '__main__':
     num_inputs = env.observation_space.shape[0]
     num_outputs = env.action_space.shape[0]
     model = ActorCriticNet(num_inputs, num_outputs, [128, 128])
-    model.load_state_dict(torch.load("results/models/human/human_iter6000.pt"))
+    model.load_state_dict(torch.load("results/models/human_4/human_4_iter400.pt"))
+    #model.load_state_dict(torch.load("results/models/human_pert/human_pert_iter2200.pt"))
+
     model.cuda()
 
     env.reset()
@@ -40,7 +43,7 @@ if __name__ == '__main__':
     while len(buffer) < num_samples:
         state = env.reset()
         for i in range(100000):
-            print(state)
+            #print(state)
             with torch.no_grad():
                 act = model.sample_best_actions(torch.from_numpy(state).cuda().type(torch.cuda.FloatTensor)).cpu().numpy()
                 #act = np.zeros(29)#.cuda().type()
