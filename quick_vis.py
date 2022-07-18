@@ -9,6 +9,7 @@ from environments.walker2d.walker2d_env import WalkerEnv
 from environments.humanoid.human_env_test2 import Humanoid_test_env2
 from environments.humanoid.human_env_test import Humanoid_test_env
 import ipdb
+from scipy.spatial.transform import Rotation as R
 
 import time
 
@@ -50,6 +51,12 @@ if __name__ == '__main__':
             next_state, rew, done, _ = env.step(act)
             env.render()
 
+            quart =next_state[2:6]
+            init_rot = R.from_quat(quart[[1,2,3,0]])
+            print(quart)
+            print(init_rot.as_euler('xyz', degrees=True))
+
+            print()
             buffer.append((state, next_state))
 
             state = next_state

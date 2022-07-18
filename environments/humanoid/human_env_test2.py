@@ -4,14 +4,11 @@ from scipy.interpolate import interp1d
 import ipdb
 import os
 from scipy.spatial.transform import Rotation as R
-import mujoco_py
+# import mujoco_py
 import time
-
-
 
 import environments.humanoid.humanoid_mujoco_env as mujoco_env_humanoid
 from environments.humanoid.humanoid_utils import flip_action, flip_position, flip_velocity
-
 
 class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
@@ -34,7 +31,7 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         self.d_gain = 10
 
         # Interpolation of gait reference wrt phase.
-        ref = np.loadtxt('environments/humanoid/humanoid_walk_ref.txt')
+        ref = np.loadtxt('../environments/humanoid/humanoid_walk_ref.txt') # <CHANGE LATER
         self.gait_ref = interp1d(np.arange(0, 39) / 38, ref, axis=0)
 
         self.gait_cycle_time = 38 * 0.03333200
@@ -245,7 +242,7 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
                             self.post_impact_left_ankle = self.data.get_body_xpos('left_ankle')[0:2].copy()
                             self.post_impact_right_ankle = self.data.get_body_xpos('right_ankle')[0:2].copy()
 
-        # self.set_state(self.target_reference, self.init_qvel)
+        self.set_state(self.target_reference, self.init_qvel)
 
         observation = self._get_obs()
 
@@ -286,8 +283,6 @@ class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         self.record_once_flag = False
         self.post_impact_left_ankle =None
         self.post_impact_right_ankle =None
-
-
 
         observation = self._get_obs()
         return observation
