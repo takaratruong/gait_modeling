@@ -1,31 +1,34 @@
-exp_name = human_2
+## Logistics ##
 env = humanoid
-train_mode = standard
+wandb = False
+project_name = humanoid
 
+vid_freq = 50
+
+## Environment and Training Parameters ##
 frame_skip = 4
-
-num_envs = 50
-max_ep_time = 12
+num_envs = 1 #50
+max_ep_time = 10
 num_steps = 100
 
-phase_action_mag = .04 # percent of gait change per sim step that agent can forward/backward
+## Gait Parameters ##
+gait_ref_file = /environments/humanoid/humanoid_walk_ref.txt
+#gait_ref_vel =
+#gait_cycle_time =
+
+## Reward and Action Parameters: ##
 orient_weight = .3
 joint_weight = .4
 pos_weight = .3
+phase_action_mag = .04 # percent of gait change per sim step that agent can forward/backward
 
-#const_perturbation = True
-#rand_perturbation = True
-midstance_perturbation = True
 
-#min_perturbation_force_mag = 110.363 # 25%
+## Perturbation Parameters: ##
+# const_perturbation = True
+# rand_perturbation = True
 
-perturbation_force = -44.0
-# .5 220.75
-# .4 176.58
-# .3 132.44
-# .2 88.29
-# .1 44.14
+# perturbation_force = 44.0
+# min_perturbation_force_mag = 30
 
-perturbation_dir = 1
-
-perturbation_delay = 4
+# perturbation_dir = 1
+# perturbation_delay = 4

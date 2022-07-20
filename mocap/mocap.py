@@ -40,11 +40,7 @@ class MoCap:
 
         return np.hstack((curr_state, next_state))
 
-    def vis(self, traj_name, env) -> None:
-        assert traj_name in self.train_traj or self.val_traj, 'enter valid traj name'
-        pass
-
-    def get_keys(self, dataset) -> List[str]:
+    def get_keys(self, dataset: str) -> List[str]:
         if dataset == 'train':
             return list(self.train_traj.keys())
         if dataset == 'val':

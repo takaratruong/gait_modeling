@@ -6,8 +6,9 @@ import wandb
 from utils.config_loader import load_args
 from utils.amp_ppo import RL
 from environments.walker2d.walker2d_env import WalkerEnv
-from environments.humanoid.human_env_test2 import Humanoid_test_env2
-from environments.humanoid.human_env_test import Humanoid_test_env
+# from environments.humanoid.human_env_test2 import Humanoid_test_env2
+# from environments.humanoid.human_env_test import Humanoid_test_env
+from environments.rajagopal.rajagopal_env import RajagopalEnv
 import ipdb
 from scipy.spatial.transform import Rotation as R
 
@@ -24,16 +25,16 @@ if __name__ == '__main__':
     args = load_args()
 
     #env = Humanoid_test_env(args=args)
-    env = Humanoid_test_env2(args=args)
+    env = RajagopalEnv(args=args)
     print("env_created")
 
-    num_inputs = env.observation_space.shape[0]
-    num_outputs = env.action_space.shape[0]
-    model = ActorCriticNet(num_inputs, num_outputs, [128, 128])
-    model.load_state_dict(torch.load("results/models/human_4/human_4_iter400.pt"))
+    # num_inputs = env.observation_space.shape[0]
+    # num_outputs = env.action_space.shape[0]
+    # model = ActorCriticNet(num_inputs, num_outputs, [128, 128])
+    # model.load_state_dict(torch.load("results/models/human_4/human_4_iter400.pt"))
     #model.load_state_dict(torch.load("results/models/human_pert/human_pert_iter2200.pt"))
 
-    model.cuda()
+    # model.cuda()
 
     env.reset()
     obs = env.observe()
@@ -46,17 +47,16 @@ if __name__ == '__main__':
         for i in range(100000):
             #print(state)
             with torch.no_grad():
-                act = model.sample_best_actions(torch.from_numpy(state).cuda().type(torch.cuda.FloatTensor)).cpu().numpy()
-                #act = np.zeros(29)#.cuda().type()
+                # act = model.sample_best_actions(torch.from_numpy(state).cuda().type(torch.cuda.FloatTensor)).cpu().numpy()
+                act = np.zeros(29)#.cuda().type()
             next_state, rew, done, _ = env.step(act)
             env.render()
-
-            quart =next_state[2:6]
-            init_rot = R.from_quat(quart[[1,2,3,0]])
-            print(quart)
-            print(init_rot.as_euler('xyz', degrees=True))
-
-            print()
+            # quart =next_state[2:6]
+            # init_rot = R.from_quat(quart[[1,2,3,0]])
+            # print(quart)
+            # print(init_rot.as_euler('xyz', degrees=True))
+            #
+            # print()
             buffer.append((state, next_state))
 
             state = next_state

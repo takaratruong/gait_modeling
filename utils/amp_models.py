@@ -6,6 +6,13 @@ from torch.autograd import Variable
 from torch.distributions import Normal, Categorical
 from torch import autograd
 import math
+import random
+
+def set_seed(seed):
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    np.random.seed(seed)
 
 def init(module, weight_init, bias_init, gain=1):
     weight_init(module.weight.data, gain=gain)
@@ -167,7 +174,6 @@ class Discriminator(nn.Module):
             x = F.relu(self.disc_fcs[i+1](x))
         disc_output = (self.disc(x))
         return disc_output
-
 
     def grad_penalty(self, state, next_state):
         disc_input = torch.cat([state, next_state], dim=-1)

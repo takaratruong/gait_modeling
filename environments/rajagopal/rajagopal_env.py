@@ -6,14 +6,13 @@ import os
 from scipy.spatial.transform import Rotation as R
 import time
 
-import environments.humanoid.humanoid_mujoco_env as mujoco_env_humanoid
-from environments.humanoid.humanoid_utils import flip_action, flip_position, flip_velocity
+import environments.rajagopal.rajagopal_mujoco_env as mujoco_rajagopal_env
 
-class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
+class RajagopalEnv(mujoco_rajagopal_env.MujocoEnv, utils.EzPickle):
 
     def __init__(
             self,
-            xml_file="humanoid.xml",
+            xml_file="Rajagopal2015_converted.xml",
             terminate_when_unhealthy=True,
             healthy_z_range=(0.7, 10.0),
             args=None
@@ -30,8 +29,8 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         self.d_gain = 10
 
         # Interpolation of gait reference wrt phase.
-        args.gait_ref_file = '../environments/humanoid/humanoid_walk_ref.txt'
-        ref = np.loadtxt(args.gait_ref_file)
+        #args.gait_ref_file
+        ref = np.loadtxt('../environments/humanoid/humanoid_walk_ref.txt')
         self.gait_ref = interp1d(np.arange(0, ref.shape[0]) / (ref.shape[0]-1), ref, axis=0)
         self.gait_ref_vel = args.gait_cycle_vel
         self.gait_cycle_time = args.gait_cycle_time # 38 * 0.03333200
@@ -48,15 +47,15 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         self.force = self.get_force()
 
-        mujoco_env_humanoid.MujocoEnv.__init__(self, xml_file, self.frame_skip)
-        self.init_qvel[0] = 1 # change later
-        self.init_qvel[1:] = 0
-        self.set_state(self.gait_ref(self.initial_phase_offset), self.init_qvel)
+        mujoco_rajagopal_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
+        # self.init_qvel[0] = 1
+        # self.init_qvel[1:] = 0
+        self.set_state(self.init_qpos, self.init_qvel)
 
     @property
     def is_healthy(self):
         min_z, max_z = self._healthy_z_range
-        is_healthy = min_z < self.data.qpos[2] < max_z
+        is_healthy = True# min_z < self.data.qpos[2] < max_z <-- fix later
         return is_healthy
 
     def calc_reward(self, obs, ref):
@@ -89,21 +88,10 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         return done
 
     def _get_obs(self):
-        if self.phase <= .5:
-            position = self.sim.data.qpos.flat.copy()
-            position = position[1:]
-            velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
-            observation = np.concatenate((position, velocity / 10, np.array([self.phase]))).ravel()
-
-        else:
-            position = self.sim.data.qpos.flat.copy()
-            position = position[1:]
-            flipped_pos = flip_position(position)
-
-            velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
-            flipped_vel = flip_velocity(velocity)
-
-            observation = np.concatenate((flipped_pos, flipped_vel / 10, np.array([self.phase - .5]))).ravel()
+        position = self.sim.data.qpos.flat.copy()
+        position = position[1:]
+        velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
+        observation = np.concatenate((position, velocity / 10, np.array([self.phase]))).ravel()
 
         return observation
 
@@ -152,8 +140,7 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
     def step(self, action):
         action = np.array(action.tolist()).copy()
-
-        joint_action = action[0:28] if self.phase <= .5 else flip_action(action[0:28])
+        joint_action = action[0:28]
 
         phase_action = self.args.phase_action_mag * action[28]
 
@@ -161,30 +148,33 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         final_target = joint_action + self.target_reference[7:]  # add action to joint ref to create final joint target
 
-        for _ in range(self.frame_skip):
-            joint_obs = self.sim.data.qpos[7:].copy()
-            joint_vel_obs = self.sim.data.qvel[6:].copy()
+        # ipdb.set_trace()
 
-            error = final_target - joint_obs
-            error_der = joint_vel_obs
+        # for _ in range(self.frame_skip):
+        #     joint_obs = self.sim.data.qpos[7:].copy()
+        #     joint_vel_obs = self.sim.data.qvel[6:].copy()
+        #
+        #     error = final_target - joint_obs
+        #     error_der = joint_vel_obs
+        #
+        #     torque = 100 * error - 10 * error_der
+        #
+        #     self.do_simulation(torque / 10, 1)
+        #
+        #     if self.args.sim_perturbation:
+        #         impact_timing = self.data.time % self.args.perturbation_delay
+        #         if impact_timing >= 0 and impact_timing <= self.args.perturbation_duration and self.data.time >= self.args.perturbation_delay:
+        #             self.apply_force(self.force)
+        #         else:
+        #             self.zero_applied_force()
+        #             self.force = self.get_force()
+        # ipdb.set_trace()
 
-            torque = 100 * error - 10 * error_der
-
-            self.do_simulation(torque / 10, 1)
-
-            if self.args.sim_perturbation:
-                impact_timing = self.data.time % self.args.perturbation_delay
-                if impact_timing >= 0 and impact_timing <= self.args.perturbation_duration and self.data.time >= self.args.perturbation_delay:
-                    self.apply_force(self.force)
-                else:
-                    self.zero_applied_force()
-                    self.force = self.get_force()
-
-        #self.set_state(self.target_reference, self.init_qvel)
+        self.set_state(self.init_qpos, self.init_qvel)
 
         observation = self._get_obs()
 
-        reward = self.calc_reward(observation, self.target_reference)
+        reward = 0 #self.calc_reward(observation, self.target_reference)
         self.total_reward += reward
 
         done = self.done
@@ -200,7 +190,7 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         self.initial_phase_offset = np.random.randint(0, 50) / 50
 
         qpos = self.gait_ref(self.phase)
-        self.set_state(qpos, self.init_qvel)
+        self.set_state(self.init_qpos, self.init_qvel)
 
         self.total_reward = 0
         self.force = self.get_force()

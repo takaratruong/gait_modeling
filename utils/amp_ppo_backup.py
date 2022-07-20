@@ -1,13 +1,13 @@
 import torch
 import numpy as np
 import time
+#import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
 import pickle
 import torch.optim as optim
 import wandb
 import os
 from scipy.interpolate import interp1d
-import ipdb
 
 from utils.amp_models import ActorCriticNet, Discriminator
 
@@ -97,7 +97,9 @@ class RL(object):
 
         self.noisy_test_mean = []
         self.noisy_test_std = []
+        #self.fig = plt.figure()
         self.lr = self.params.lr
+        #plt.show(block=False)
 
         self.test_list = []
         self.noisy_test_list = []
@@ -118,7 +120,6 @@ class RL(object):
         self.base_policy = None
 
         self.total_rewards = []
-        self.episode_lengths = []
 
     def run_test(self, num_test=1):
         state = self.env.reset()
@@ -157,19 +158,50 @@ class RL(object):
 
         reward_mean = np.mean(self.total_rewards)
         reward_std = np.std(self.total_rewards)
-
-        ep_len_mean = np.mean(self.episode_lengths)
-        ep_len_std = np.std(self.episode_lengths)
-
         # print(reward_mean, reward_std, self.total_rewards)
         self.noisy_test_mean.append(reward_mean)
         self.noisy_test_std.append(reward_std)
         self.noisy_test_list.append((reward_mean, reward_std))
 
-        # print("reward mean,", reward_mean)
-        # print("reward std,", reward_std)
+        print("reward mean,", reward_mean)
+        print("reward std,", reward_std)
 
-        return reward_mean, reward_std , ep_len_mean, ep_len_std
+        return reward_mean, reward_std
+
+    def save_reward_stats(self, stats_name):
+        with open(stats_name, 'wb') as f:
+            np.save(f, np.array(self.noisy_test_mean))
+            np.save(f, np.array(self.noisy_test_std))
+
+    def plot_statistics(self):
+
+        #plt.clf()
+        #ax = self.fig.add_subplot(121)
+        # ax2 = self.fig.add_subplot(122)
+        low = []
+        high = []
+        index = []
+        noisy_low = []
+        noisy_high = []
+        for i in range(len(self.noisy_test_mean)):
+            # low.append(self.test_mean[i] - self.test_std[i])
+            # high.append(self.test_mean[i] + self.test_std[i])
+            noisy_low.append(self.noisy_test_mean[i] - self.noisy_test_std[i])
+            noisy_high.append(self.noisy_test_mean[i] + self.noisy_test_std[i])
+            index.append(i)
+        #plt.xlabel('iterations')
+        #plt.ylabel('average rewards')
+        # ax.plot(self.test_mean, 'b')
+        #ax.plot(self.noisy_test_mean, 'g')
+        # ax.fill_between(index, low, high, color='cyan')
+        #ax.fill_between(index, noisy_low, noisy_high, color='r')
+        # ax.plot(map(sub, test_mean, test_std))
+        #self.fig.canvas.draw()
+        # plt.show()
+
+
+        return self.noisy_test_mean[-1], noisy_low[-1], noisy_high[-1]
+        #plt.savefig("test.png")
 
     def feature_extractor(self, state):
         cols = [0, 1, 2, 3, 4, 5, 6, 7, 8, 17]
@@ -246,7 +278,6 @@ class RL(object):
         for i in range(num_samples):
             self.storage.push(states[i], actions[i], next_states[i], rewards[i], q_values[i], log_probs[i], self.num_envs)
         self.total_rewards = self.env.get_total_reward()
-        self.episode_lengths = self.env.get_elapsed_time()
         #print("processing time", time.time() - start)
 
     """
@@ -430,8 +461,6 @@ class RL(object):
         self.env.reset()
         self.load_motion_data()
         for iterations in range(200000): #200000
-
-            print("------------------------------")
             print("iteration: ", iterations)
             iteration_start = time.time()
             while self.storage.counter < max_samples:
@@ -443,23 +472,21 @@ class RL(object):
             #disc_loss = self.update_discriminator(max_samples // 4, 40) #commented out
             self.storage.clear()
 
-            if (iterations) % self.params.vid_freq == 0 and self.vid_callback is not None:
+            if (iterations) % 50 == 0 and self.vid_callback is not None:
                 self.vid_callback.save_video(self.gpu_model)
 
-            if (iterations) % 1 == 0:
-                if self.params.wandb:
-                    wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": -1})
+            if (iterations) % 1 == 0 and self.params.wandb:
+                wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": -1})
 
-            if (iterations) % 5 == 0:
-                reward_mean, reward_std, ep_len_mean, ep_len_std = self.run_test_with_noise(num_test=2)
-                print("reward: ", np.round(reward_mean,3), u"\u00B1" ,np.round(reward_std,3))
-                print("ep len: ", np.round(ep_len_mean,3), u"\u00B1" ,np.round(ep_len_std,3))
-
-                if self.params.wandb:
-                    wandb.log({"eval/reward": reward_mean, "eval/ep_len": ep_len_mean} )
+            if (iterations) % 5 == 0 and self.params.wandb:
+                reward_mean, reward_std = self.run_test_with_noise(num_test=2)
+                self.plot_statistics()
+                #plt.savefig("test.png")
+                #print(reward_mean, reward_std)
+                wandb.log({"eval/reward_mean": reward_mean, "eval/reward_high": reward_mean+ reward_std, "eval/reward_low": reward_mean-reward_std}, )
 
             #print("update policy time", time.time() - start)
-            print("time", np.round(time.time() - iteration_start,3) )
+            print("iteration time", iterations, time.time() - iteration_start)
             print()
 
             if (iterations) % 100 == 0:

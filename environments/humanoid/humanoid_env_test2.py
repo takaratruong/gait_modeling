@@ -3,13 +3,22 @@ from gym import utils
 from scipy.interpolate import interp1d
 import ipdb
 import os
-from scipy.spatial.transform import Rotation as R
-import time
 
 import environments.humanoid.humanoid_mujoco_env as mujoco_env_humanoid
-from environments.humanoid.humanoid_utils import flip_action, flip_position, flip_velocity
 
-class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
+"""
+
+
+DEFAULT_CAMERA_CONFIG = {
+    "trackbodyid": 3,
+    "distance": 4.0,
+    "lookat": np.array((0.0, 0.0, 1.15)),
+    "elevation": -20.0,
+}
+"""
+
+
+class Humanoid_test_env2(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
     def __init__(
             self,
@@ -30,27 +39,27 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         self.d_gain = 10
 
         # Interpolation of gait reference wrt phase.
-        args.gait_ref_file = '../environments/humanoid/humanoid_walk_ref.txt'
-        ref = np.loadtxt(args.gait_ref_file)
-        self.gait_ref = interp1d(np.arange(0, ref.shape[0]) / (ref.shape[0]-1), ref, axis=0)
-        self.gait_ref_vel = args.gait_cycle_vel
-        self.gait_cycle_time = args.gait_cycle_time # 38 * 0.03333200
-        self.time_step = .01
+        ref = np.loadtxt('environments/humanoid/humanoid_walk_ref.txt')
+        self.gait_ref = interp1d(np.arange(0, 39) / 38, ref, axis=0)
+
+        self.gait_cycle_time = 38 * 0.03333200
+        self.time_step = .0166
 
         self.initial_phase_offset = np.random.randint(0, 50) / 50
 
         self.action_phase_offset = 0
 
         self.max_ep_time = self.args.max_ep_time
+
         self.frame_skip = self.args.frame_skip
 
         self.total_reward = 0
 
-        self.force = self.get_force()
-
         mujoco_env_humanoid.MujocoEnv.__init__(self, xml_file, self.frame_skip)
-        self.init_qvel[0] = 1 # change later
+
+        self.init_qvel[0] = 1
         self.init_qvel[1:] = 0
+
         self.set_state(self.gait_ref(self.initial_phase_offset), self.init_qvel)
 
     @property
@@ -66,17 +75,13 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         pos_ref = ref[0:3]
         pos = self.sim.data.qpos[0:3]
-        pos_reward = 10 * (self.gait_ref_vel - self.sim.data.qvel[0]) ** 2 + \
-                     2 * (self.gait_ref_vel - np.sum(self.sim.data.get_body_xvelp('neck')[0])) ** 2 + \
-                     1 * (np.sum(self.sim.data.get_body_xvelp('neck')[1])) ** 2 + \
-                     1 * (pos_ref[1] - pos[1]) ** 2 + (pos_ref[2] - pos[2]) ** 2  # Added neck vel y
-
+        pos_reward = 10 * (1.23859 / self.gait_cycle_time - self.sim.data.qvel[0]) ** 2 + (pos_ref[1] - pos[1]) ** 2 + (
+                    pos_ref[2] - pos[2]) ** 2
         pos_reward = np.exp(-pos_reward)
 
         orient_ref = ref[3:7]
-        orient_obs = obs[2:6]
-        orient_reward = 2 * np.sum((orient_ref - orient_obs) ** 2) + 5 * np.sum(
-            (self.sim.data.qvel[3:6]) ** 2)  # <-- fix later
+        orient_obs = self.sim.data.qpos[3:7]
+        orient_reward = 2 * np.sum((orient_ref - orient_obs) ** 2) + 5 * np.sum((self.sim.data.qvel[3:6]) ** 2)
         orient_reward = np.exp(-orient_reward)
 
         reward = self.args.orient_weight * orient_reward + self.args.joint_weight * joint_reward + self.args.pos_weight * pos_reward
@@ -89,7 +94,7 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         return done
 
     def _get_obs(self):
-        if self.phase <= .5:
+        if self.phase < .5:
             position = self.sim.data.qpos.flat.copy()
             position = position[1:]
             velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
@@ -98,12 +103,59 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         else:
             position = self.sim.data.qpos.flat.copy()
             position = position[1:]
-            flipped_pos = flip_position(position)
 
             velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
-            flipped_vel = flip_velocity(velocity)
 
-            observation = np.concatenate((flipped_pos, flipped_vel / 10, np.array([self.phase - .5]))).ravel()
+            flipped_pos = np.concatenate((
+                position[0:6],  # x,y, quart
+
+                # flip chest
+                np.array([-1 * position[6]]),
+                np.array([position[7]]),
+                np.array([-1 * position[8]]),
+
+                # flip neck
+                np.array([-1 * position[9]]),
+                np.array([position[10]]),
+                np.array([-1 * position[11]]),
+
+                # flip shoulders and elbow
+                position[16:20],
+                position[12:16],
+
+                # flip hip knee and ankle
+                position[27:35],
+                position[20:27],
+            ))
+
+            flipped_vel = np.concatenate((
+                velocity[0:3] / 10,
+
+                # flip center rotation
+                np.array([-1 * velocity[3] / 10]),
+                np.array([velocity[4] / 10]),
+                np.array([-1 * velocity[5] / 10]),
+
+                # flip chest
+                np.array([-1 * velocity[6] / 10]),
+                np.array([velocity[7] / 10]),
+                np.array([-1 * velocity[8] / 10]),
+
+                # flip neck
+                np.array([-velocity[9] / 10]),
+                np.array([velocity[10] / 10]),
+                np.array([-velocity[11] / 10]),
+
+                # flip shoulders and elbow
+                velocity[16:20] / 10,
+                velocity[12:16] / 10,
+
+                # flip hip knee and ankle
+                velocity[27:35] / 10,
+                velocity[20:27] / 10,
+            ))
+
+            observation = np.concatenate((flipped_pos, flipped_vel, np.array([self.phase - 0.5])))
 
         return observation
 
@@ -131,29 +183,21 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
         return gait_ref
 
-    def get_force(self):
-        force = self.args.perturbation_force
-        dir = self.args.perturbation_dir
-        if self.args.rand_perturbation:
-            neg_force = np.random.randint(-abs(self.args.perturbation_force), -abs(self.args.min_perturbation_force_mag))
-            pos_force = np.random.randint(abs(self.args.min_perturbation_force_mag), abs(self.args.perturbation_force))
-            force = neg_force if np.random.rand() <= .5 else pos_force
-            dir = np.random.randint(2)
-        return (dir, force)
-
-    def apply_force(self, force):
-        dir = force[0]
-        mag = force[1]
-        self.sim.data.qfrc_applied[dir] = mag
-
-    def zero_applied_force(self):
-        self.sim.data.qfrc_applied[0] = 0
-        self.sim.data.qfrc_applied[1] = 0
+    def get_rand_force(self):
+        neg_force = np.random.randint(-abs(self.args.perturbation_force), -abs(self.args.min_perturbation_force_mag))
+        pos_force = np.random.randint(abs(self.args.min_perturbation_force_mag), abs(self.args.perturbation_force))
+        return neg_force if np.random.rand() <= .5 else pos_force
 
     def step(self, action):
-        action = np.array(action.tolist()).copy()
-
-        joint_action = action[0:28] if self.phase <= .5 else flip_action(action[0:28])
+        action = np.array(action.tolist())
+        if self.phase < 0.5:
+            joint_action = action[0:28]
+        else:
+            joint_action = action[[0, 1, 2, 3, 4, 5,
+                                   10, 11, 12, 13,
+                                   6, 7, 8, 9,
+                                   21, 22, 23, 24, 25, 26, 27,
+                                   14, 15, 16, 17, 18, 19, 20]]
 
         phase_action = self.args.phase_action_mag * action[28]
 
@@ -172,23 +216,16 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
 
             self.do_simulation(torque / 10, 1)
 
-            if self.args.sim_perturbation:
-                impact_timing = self.data.time % self.args.perturbation_delay
-                if impact_timing >= 0 and impact_timing <= self.args.perturbation_duration and self.data.time >= self.args.perturbation_delay:
-                    self.apply_force(self.force)
-                else:
-                    self.zero_applied_force()
-                    self.force = self.get_force()
-
-        #self.set_state(self.target_reference, self.init_qvel)
+        # self.set_state(self.target_reference, self.init_qvel)
 
         observation = self._get_obs()
-
         reward = self.calc_reward(observation, self.target_reference)
+
         self.total_reward += reward
 
         done = self.done
         info = {}
+
         if self.data.time >= self.max_ep_time:
             info["TimeLimit.truncated"] = not done
             done = True
@@ -196,16 +233,15 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         return observation, reward, done, info
 
     def reset_model(self):
+        self.total_reward = 0
         self.action_phase_offset = 0
         self.initial_phase_offset = np.random.randint(0, 50) / 50
 
         qpos = self.gait_ref(self.phase)
+
         self.set_state(qpos, self.init_qvel)
 
-        self.total_reward = 0
-        self.force = self.get_force()
         observation = self._get_obs()
-
         return observation
 
     def reset_time_limit(self):
@@ -217,5 +253,22 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
     def get_total_reward(self):
         return self.total_reward
 
-    def get_elapsed_time(self):
-        return self.data.time
+
+"""
+
+
+        joint_ref = ref[7:]
+        joint_obs = self.sim.data.qpos[7:35]
+        joint_reward = np.exp(-2 * np.sum((joint_ref - joint_obs) ** 2))
+
+        pos_ref = ref[0:3]
+        pos = self.sim.data.qpos[0:3]
+        pos_reward = 10 * (1 - self.sim.data.qvel[0]) ** 2 + (pos_ref[1] - pos[1]) ** 2 + (pos_ref[2] - pos[2]) ** 2
+        pos_reward = np.exp(-pos_reward)
+
+        orient_ref = ref[3:7]
+        orient_obs = self.sim.data.qpos[3:7]
+        orient_reward = 2 * np.sum((orient_ref - orient_obs) ** 2) + 5 * np.sum((self.sim.data.qvel[3:6]) ** 2)
+        orient_reward = np.exp(-orient_reward)
+
+"""

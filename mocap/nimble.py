@@ -14,7 +14,9 @@ from scipy.spatial.transform import Rotation as R
 
 import sys
 sys.path.append('..')
-from environments.humanoid.human_env_test2 import Humanoid_test_env2
+from environments.humanoid.humanoid_env import HumanoidEnv
+from environments.rajagopal.rajagopal_env import RajagopalEnv
+
 from utils.config_loader import load_args
 
 joint2idx = {
@@ -109,12 +111,13 @@ if __name__ == "__main__":
     path_osim = '/home/takaraet/gait_modeling/mocap/Rajagopal_Scaled.osim'
     file: nimble.biomechanics.OpenSimFile = nimble.biomechanics.OpenSimParser.parseOsim(path_osim)
 
-    name = 'S01DN203'
+    name = 'S01DN201'
     path_mot = '/home/takaraet/gait_modeling/mocap/SubjectData_1/IK/' + name + '/output/results_ik.mot'
+    #path_mot = '/home/takaraet/gait_modeling/mocap/S02DN101_keenon.mot'
+
     mot: nimble.biomechanics.OpenSimMot = nimble.biomechanics.OpenSimParser.loadMot(file.skeleton, path_mot)
 
-
-    #pprint.pprint(mot.poses[:, 100])
+    pprint.pprint(mot.poses[:, 0])
 
     if args.visualize:
         world = nimble.simulation.World()
@@ -127,156 +130,70 @@ if __name__ == "__main__":
             for i in range(mot.poses.shape[1]):
                 file.skeleton.setPositions(mot.poses[:, i])
                 gui.nativeAPI().renderSkeleton(file.skeleton)
-                time.sleep(.02)
+                time.sleep(.01)
 
     # gui.blockWhileServing()
-    #
+
+    # num = 0
     # print('\''+ file.skeleton.getDofs()[num].getName()+'\':', str(num)+',')
-    #
+
 
     file.skeleton.setPositions(mot.poses[:, 0])
     xpos = file.skeleton.getJointWorldPositionsMap()
 
-    """
-    CALC BODY GEOM 
-    """
-    # pprint.pprint(xpos)
-    femur_r = dist(xpos['hip_r'], xpos['walker_knee_r'])  # thigh
-    tibia_r = dist(xpos['walker_knee_r'], xpos['ankle_r']) #shin
-    foot_r = dist(xpos['ankle_r'], xpos['mtp_r'])
-
-    femur_l = dist(xpos['hip_l'], xpos['walker_knee_l'])  # thigh
-    tibia_l = dist(xpos['walker_knee_l'], xpos['ankle_l']) # shin
-    foot_l = dist(xpos['ankle_l'], xpos['mtp_l'])
-
-    # print(femur_l, femur_r)
-    # print(tibia_l, tibia_r)
-    # print(foot_l, foot_r)
-
-
-    b = dist(xpos['ground_pelvis'], xpos['acromial_l'])
-    a = dist(xpos['acromial_l'], xpos['acromial_r'])
-    torso = b**2 * (1 - (a**2 / (2*b)**2))
-    # print(torso)
-    # assert False
-
-    """
-    RUN TRAJECTORY ON MUJOCO
-    """
-
-    # env = Humanoid_test_env2(args=args,xml_file='subject1.xml')
-    env = Humanoid_test_env2(args=args,xml_file='humanoid.xml')
+    env = HumanoidEnv(args=args, xml_file='humanoid.xml')
 
     env.reset()
 
-    state = env.observe()
-
-    # quart = state[3:7]
-    # init_rot = R.from_quat(quart)
-    # print(quart)
-    # print(init_rot.as_euler('xyz',degrees=True))
-    # print('---------------------------------')
-    #
-    #
-    # frame = mot.poses[:,0]
-    #
-    # rot = R.from_euler('xyz',  [-1*frame[joint2idx['pelvis_tx']], frame[joint2idx['pelvis_ty']], frame[joint2idx['pelvis_tz']]])
-    # rot2 = R.from_euler('xyz', [0,0,0])
-    #
-    # print("rot", rot.as_euler('xyz', degrees=True))
-    # print("rot2", rot2.as_euler('xyz', degrees=True))
-    #
-    # print("rot", rot.as_quat())
-    # print("rot2", rot2.as_quat())
-
-    compiled_results = np.zeros(34+35)
-
     """VISUALIZE"""
-    frame = mot.poses[:, 0]
-    file.skeleton.setPositions(frame)
-    xpos_old = file.skeleton.getJointWorldPositionsMap()
+    # assert False
+    print(mot.poses.shape[1])
+    while True:
+        for i in range(0, mot.poses.shape[1]):  # range(900, 1200):#mot.poses.shape[1]):
+            qpos = np.zeros(35)
+            qvel = np.zeros(34)
 
-    rot = R.from_euler('xyz', [frame[joint2idx['lumbar_bending']] * -1 - .1, (frame[joint2idx['lumbar_extension']]) * -1 - .4, frame[joint2idx['lumbar_rotation']] - .1])  # +.5
-    rot_old = rot.as_euler('xyz')
-    qpos_old = np.concatenate((
-        np.array(xpos['ground_pelvis'][[0, 2, 1]] - [0, 0, .15]),  # [0,2,1]
-        # np.array([1, 0, 0, 0]),  # root
+            frame = mot.poses[:, i]
+            file.skeleton.setPositions(frame)
+            xpos = file.skeleton.getJointWorldPositionsMap()
 
-        np.array(rot.as_quat()[[3, 0, 1, 2]]),  # root
-        np.array([0, 0, 0]),  # chest
-        np.array([0, 0, 0]),  # neck
+            # print(frame[joint2idx['pelvis_tx']], frame[joint2idx['pelvis_ty']], frame[joint2idx['pelvis_tz']])
+            # print(frame[joint2idx['pelvis_tilt']], frame[joint2idx['pelvis_list']], frame[joint2idx['pelvis_rotation']])
 
-        np.array([frame[joint2idx['arm_add_r']], frame[joint2idx['arm_flex_r']], frame[joint2idx['arm_rot_r']]]),
-        # right shoulder
-        np.array([frame[joint2idx['elbow_flex_r']]]),  # right elbow
-        np.array(
-            [-1 * frame[joint2idx['arm_add_l']], frame[joint2idx['arm_flex_l']], -1 * frame[joint2idx['arm_rot_l']]]),
-        # left shoulder
-        np.array([frame[joint2idx['elbow_flex_l']]]),  # left elbow
+            rot = R.from_euler('xyz', [frame[joint2idx['lumbar_bending']] * -1 - .1,
+                                       (frame[joint2idx['lumbar_extension']]) * -1 - .4,
+                                       frame[joint2idx['lumbar_rotation']] - .1])  # +.5
+            rot_euler = rot.as_euler('xyz')
 
-        np.array([frame[joint2idx['hip_abuction_r']], -1 * frame[joint2idx['hip_flexion_r']] - .3,
-                  frame[joint2idx['hip_rotation_r']]]),  # right hip -.52
-        np.array([-1 * frame[joint2idx['knee_angle_r']]]),  # right knee
-        np.array([frame[joint2idx['subtalar_angle_r']], frame[joint2idx['ankle_angle_r']], 0]),  # right ankle
+            """ POSITION """
+            qpos = np.concatenate((
+                np.array(xpos['ground_pelvis'][[0, 2, 1]] - [0, 0, .14]),  # [0,2,1]
+                # np.array([1, 0, 0, 0]),  # root
 
-        np.array([-1 * frame[joint2idx['hip_adduction_l']], -1 * frame[joint2idx['hip_flexion_l']] - .3,
-                  -1 * frame[joint2idx['hip_rotation_l']]]),  # left hip -.52
-        np.array([-1 * frame[joint2idx['knee_angle_l']]]),  # left knee
-        np.array([-1 * frame[joint2idx['subtalar_angle_l']], frame[joint2idx['ankle_angle_l']], 0]),  # left ankle
-    ))
+                np.array(rot.as_quat()[[3, 0, 1, 2]]),  # root
+                np.array([0, 0, 0]),  # chest
+                np.array([0, 0, 0]),  # neck
 
+                np.array(
+                    [frame[joint2idx['arm_add_r']], frame[joint2idx['arm_flex_r']], frame[joint2idx['arm_rot_r']]]),
+                # right shoulder
+                np.array([frame[joint2idx['elbow_flex_r']]]),  # right elbow
+                np.array([-1 * frame[joint2idx['arm_add_l']], frame[joint2idx['arm_flex_l']],
+                          -1 * frame[joint2idx['arm_rot_l']]]),  # left shoulder
+                np.array([frame[joint2idx['elbow_flex_l']]]),  # left elbow
 
-    file.skeleton.getBodyNode('pelvis').getWorldTransform() # <-3x3 rot .linear()  and 3x3 offset  .offset()
-    #while True:
-    for i in range(0, mot.poses.shape[1]): #range(900, 1200):#mot.poses.shape[1]):
-        frame = mot.poses[:, i]
-        file.skeleton.setPositions(frame)
-        xpos = file.skeleton.getJointWorldPositionsMap()
+                np.array([frame[joint2idx['hip_abuction_r']], -1 * frame[joint2idx['hip_flexion_r']] - .3,
+                          frame[joint2idx['hip_rotation_r']]]),  # right hip -.52
+                np.array([-1 * frame[joint2idx['knee_angle_r']]]),  # right knee
+                np.array([frame[joint2idx['subtalar_angle_r']], frame[joint2idx['ankle_angle_r']], 0]),  # right ankle
 
-        # print(frame[joint2idx['pelvis_tx']], frame[joint2idx['pelvis_ty']], frame[joint2idx['pelvis_tz']])
-        # print(frame[joint2idx['pelvis_tilt']], frame[joint2idx['pelvis_list']], frame[joint2idx['pelvis_rotation']])
+                np.array([-1 * frame[joint2idx['hip_adduction_l']], -1 * frame[joint2idx['hip_flexion_l']] - .3,
+                          -1 * frame[joint2idx['hip_rotation_l']]]),  # left hip -.52
+                np.array([-1 * frame[joint2idx['knee_angle_l']]]),  # left knee
+                np.array([-1 * frame[joint2idx['subtalar_angle_l']], frame[joint2idx['ankle_angle_l']], 0]),
+            # left ankle
+            ))
 
-        rot = R.from_euler('xyz', [frame[joint2idx['lumbar_bending']]*-1-.1, (frame[joint2idx['lumbar_extension']])*-1 -.4, frame[joint2idx['lumbar_rotation']]-.1]) #+.5
-        rot_euler = rot.as_euler('xyz')
-
-        """ POSITION """
-        qpos = np.concatenate((
-            np.array(xpos['ground_pelvis'][[0, 2, 1]] - [0, 0, .15]), #[0,2,1]
-            # np.array([1, 0, 0, 0]),  # root
-
-            np.array(rot.as_quat()[[3, 0, 1, 2]]),  # root
-            np.array([0, 0, 0]),  # chest
-            np.array([0, 0, 0]),  # neck
-
-            np.array([frame[joint2idx['arm_add_r']], frame[joint2idx['arm_flex_r']], frame[joint2idx['arm_rot_r']]]),  # right shoulder
-            np.array([frame[joint2idx['elbow_flex_r']]]),  # right elbow
-            np.array([-1 * frame[joint2idx['arm_add_l']], frame[joint2idx['arm_flex_l']], -1*frame[joint2idx['arm_rot_l']]]),  # left shoulder
-            np.array([frame[joint2idx['elbow_flex_l']]]),  # left elbow
-
-            np.array([frame[joint2idx['hip_abuction_r']], -1 * frame[joint2idx['hip_flexion_r']] -.3, frame[joint2idx['hip_rotation_r']]]),  # right hip -.52
-            np.array([-1 * frame[joint2idx['knee_angle_r']]]),  # right knee
-            np.array([frame[joint2idx['subtalar_angle_r']], frame[joint2idx['ankle_angle_r']], 0]),  # right ankle
-
-            np.array([-1 * frame[joint2idx['hip_adduction_l']], -1 * frame[joint2idx['hip_flexion_l']]-.3, -1*frame[joint2idx['hip_rotation_l']]]),  # left hip -.52
-            np.array([-1 * frame[joint2idx['knee_angle_l']]]),  # left knee
-            np.array([-1 * frame[joint2idx['subtalar_angle_l']], frame[joint2idx['ankle_angle_l']], 0]),  # left ankle
-        ))
-
-        """ VELOCITY """
-        q_vel = (qpos - qpos_old)/.01
-        q_vel[0] += 1.25
-        q_vel = np.delete(q_vel, 3, 0) # delete element of quart and set to rot v in euler
-        rot_vel = (rot_euler - rot_old) / .01
-        q_vel[3:6] = rot_vel
-
-        compiled_results = np.vstack((compiled_results, np.concatenate((qpos,q_vel))))
-        env.set_state(qpos, q_vel)
-        env.render()
-        time.sleep(.01)
-        rot_old = rot_euler
-        qpos_old = qpos
-
-    compiled_results = np.delete(compiled_results, [0, 1], 0)
-
-    # np.save('SubjectData_1/Processed/' + name, compiled_results)
+            env.set_state(qpos, qvel)
+            env.render()
 
