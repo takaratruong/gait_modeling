@@ -1,19 +1,21 @@
 ## Logistics ##
 env = humanoid
-wandb = True
-project_name = skeleton
+wandb = False
+project_name = humanoid
 
 vid_freq = 50
 
 ## Environment and Training Parameters ##
-frame_skip = 8
-num_envs = 50
-max_ep_time = 10
+frame_skip = 4
+num_envs = 1 #50
+max_ep_time = 2000
 num_steps = 100
 
 ## Gait Parameters ##
-gait_ref_file = /environments/humanoid/humanoid_walk_ref.txt
+gait_ref_file = ../environments/skeleton/skeleton_walk_ref.npy
+#gait_ref_vel =
 #gait_cycle_time =
+
 
 ## Reward and Action Parameters: ##
 rot_weight = .3
@@ -21,12 +23,13 @@ jnt_weight = .4
 pos_weight = .3
 phase_action_mag = .04 # percent of gait change per sim step that agent can forward/backward
 
+
 ## Perturbation Parameters: ##
 # const_perturbation = True
-#rand_perturbation = True
+# rand_perturbation = True
 
-#perturbation_force = 132
-#min_perturbation_force_mag = 90
+# perturbation_force = 44.0
+# min_perturbation_force_mag = 30
 
-#perturbation_dir = 1
-#perturbation_delay = 4
+# perturbation_dir = 1
+# perturbation_delay = 4

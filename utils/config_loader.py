@@ -16,7 +16,7 @@ p.add('--vid_freq', type=int, default=10)
 
 p.add('--gait_ref_file', type=str, default='' )
 p.add('--gait_cycle_time', type=float, default=1.266616)
-p.add('--gait_cycle_vel', type=float, default=0.977873)
+p.add('--treadmill_velocity', type=float, default=1.25)
 
 
 """ Experiment Parameters """
@@ -53,8 +53,8 @@ p.add('-p_del', '--perturbation_delay', type=float, default=3.0)
 # Reward/Action weights
 p.add('--phase_action_mag', type=float, default=50)
 
-p.add('--orient_weight', type=float, default=.3)
-p.add('--joint_weight', type=float, default=.4)
+p.add('--jnt_weight', type=float, default=.4)
+p.add('--rot_weight', type=float, default=.3)
 p.add('--pos_weight', type=float, default=.3)
 
 

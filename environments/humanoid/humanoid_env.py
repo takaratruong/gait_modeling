@@ -30,10 +30,10 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         self.d_gain = 10
 
         # Interpolation of gait reference wrt phase.
-        args.gait_ref_file = '../environments/humanoid/humanoid_walk_ref.txt'
+        args.gait_ref_file = 'environments/humanoid/humanoid_walk_ref.txt'
         ref = np.loadtxt(args.gait_ref_file)
         self.gait_ref = interp1d(np.arange(0, ref.shape[0]) / (ref.shape[0]-1), ref, axis=0)
-        self.gait_ref_vel = args.gait_cycle_vel
+        self.gait_ref_vel = 1#.1 # args.gait_cycle_vel
         self.gait_cycle_time = args.gait_cycle_time # 38 * 0.03333200
         self.time_step = .01
 
@@ -49,8 +49,8 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         self.force = self.get_force()
 
         mujoco_env_humanoid.MujocoEnv.__init__(self, xml_file, self.frame_skip)
-        self.init_qvel[0] = 1 # change later
-        self.init_qvel[1:] = 0
+        self.init_qvel[0] = 1# -10 # change later
+        # self.init_qvel[1:] = 0
         self.set_state(self.gait_ref(self.initial_phase_offset), self.init_qvel)
 
     @property
@@ -79,7 +79,7 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
             (self.sim.data.qvel[3:6]) ** 2)  # <-- fix later
         orient_reward = np.exp(-orient_reward)
 
-        reward = self.args.orient_weight * orient_reward + self.args.joint_weight * joint_reward + self.args.pos_weight * pos_reward
+        reward = self.args.rot_weight * orient_reward + self.args.jnt_weight * joint_reward + self.args.pos_weight * pos_reward
 
         return reward
 
@@ -169,8 +169,22 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
             error_der = joint_vel_obs
 
             torque = 100 * error - 10 * error_der
+            #self.model.body_pos[1, 0] -= .01  # pos[:]
+
+            # torque = torque * 0
+            # torque[0] = 100
+            # # ipdb.set_trace()
+            #
+            # self.sim.data.set_joint_qvel('box_floor', -3)
 
             self.do_simulation(torque / 10, 1)
+
+            # self.sim.data.body_xvelp[0, 0] = -5
+
+            # ipdb.set_trace()
+
+            # self.set_state(self.target_reference, self.init_qvel)
+            # ipdb.set_trace()
 
             if self.args.sim_perturbation:
                 impact_timing = self.data.time % self.args.perturbation_delay
@@ -180,8 +194,8 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
                     self.zero_applied_force()
                     self.force = self.get_force()
 
-        #self.set_state(self.target_reference, self.init_qvel)
-
+        # self.set_state(self.target_reference, self.init_qvel)
+        # ipdb.set_trace()
         observation = self._get_obs()
 
         reward = self.calc_reward(observation, self.target_reference)
@@ -198,6 +212,9 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
     def reset_model(self):
         self.action_phase_offset = 0
         self.initial_phase_offset = np.random.randint(0, 50) / 50
+
+        # self.model.body_pos[1, 0] =0 # pos[:]
+
 
         qpos = self.gait_ref(self.phase)
         self.set_state(qpos, self.init_qvel)

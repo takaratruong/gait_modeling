@@ -6,7 +6,7 @@ from utils.config_loader import load_args
 from utils.amp_ppo import RL
 from utils.amp_models import set_seed
 from environments.humanoid.humanoid_env import HumanoidEnv
-# from environments.humanoid.humanoid_env_test2 import Humanoid_test_env2
+from environments.skeleton.skeleton_env import SkeletonEnv
 
 from utils.video_callback import AMPVideoCallback
 from utils.load_envs import load_envs

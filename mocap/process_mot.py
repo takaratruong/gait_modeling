@@ -1,4 +1,4 @@
-import nimblephysics as nimble
+# import nimblephysics as nimble
 import pprint
 import ipdb
 import time
@@ -12,81 +12,88 @@ from typing import Optional
 from typing import Tuple
 from scipy.spatial.transform import Rotation as R
 import pandas as pd
+from scipy.interpolate import interp1d
 
 import sys
 sys.path.append('..')
 from environments.humanoid.humanoid_env import HumanoidEnv
 from environments.rajagopal.rajagopal_env import RajagopalEnv
+from environments.skeleton.skeleton_env import SkeletonEnv
 
 from utils.config_loader import load_args
 
+#
+# def flip_ball_joint(x, y, z):
+#     new_x = row[x]
+#     new_y = -row[z]
+#     new_z = row[y]
+#     return new_x, new_y, new_z
+#
 
 if __name__ == "__main__":
     args = load_args()
-    df = pd.read_table("S02DN101_keenon.mot", skiprows=10)
+    df = pd.read_table("S02DN101_v5.mot", skiprows=10)
 
-    env = HumanoidEnv(args=args)
+    env = SkeletonEnv(args=args, xml_file='skeleton.xml')
     env.reset()
+    qpos = np.zeros(36)  # last one is treadmill
+    qpos[1] = 1.5
+    env.set_state(qpos, np.zeros(36))
     while True:
-        for index, row in df.iterrows():
-            qpos = np.zeros(35)
-            qvel = np.zeros(34)
+        env.reset()
 
-            rot = R.from_euler('xyz', [row['root_rot_x'], -row['root_rot_z'], row['root_rot_y']])  # +.5
-            qpos[0:3] = [row['root_pos_x'], -row['root_pos_z'], row['root_pos_y'] +.85]  # root ps
-            qpos[3:7] = rot.as_quat()[[3, 0, 1, 2]]  # orient [1,0,0,0 ] #
-            qpos[7:10] = [0, 0, 0]  # chest -1*rot.as_euler('xyz') #
-            qpos[10:13] = [0, 0, 0]  # neck
-
-            qpos[13:16] = [row['acromial_r_x'], -row['acromial_r_z'], row['acromial_r_y']]
-            qpos[16] = row['elbow_r']
-
-            qpos[17:20] = [row['acromial_l_x'], -row['acromial_l_z'], row['acromial_l_y']]
-            qpos[20] = row['elbow_l']
-
-            qpos[21:24] = [row['hip_r_x'], -row['hip_r_z'], -row['hip_r_y']]
-            qpos[24] = -row['walker_knee_r']
-            qpos[25:28] = [0, -row['ankle_r'], 0]
-
-            qpos[28:31] = [row['hip_l_x'], -row['hip_l_z'], row['hip_l_y']]
-            qpos[31] = -row['walker_knee_l']
-            qpos[32:35] = [0, -row['ankle_l'], 0]
-
-            env.set_state(qpos, qvel)
+        done = False
+        while not done:
+            next_state, rew, done, _ = env.step(np.zeros(30))
             env.render()
 
 
-"""
 
+    assert False
 
-    # df = pd.read_table( "results_ik_right.mot", skiprows=10)
-    # # df = pd.read_table( "SubjectData_1/IK/S01DN201/output/results_ik.mot", skiprows=10)
-    # df = df.drop(columns='time')
-    # df = df.apply(lambda x: np.deg2rad(x) if x.name not in ['pelvis_tz', 'pelvis_ty', 'pelvis_tz'] else x)
+    """ GET WALK REFERENCE """
+    jnt2adr = env.model.get_joint_qpos_addr
 
-    # data_joints = set(df.keys())
-    # env = RajagopalEnv(args=args)
-    # env.reset()
-    #
-    # model_joints = set(env.model.joint_names)
-    #
-    # shared_joints = model_joints.intersection(data_joints)
-    # print(len(shared_joints))
-    # print(shared_joints)
-    #
+    df = df.drop([x for x in range(0, len(df)) if x < 105 or x > 210])
+
+    data = np.loadtxt("S02DN101_v5.mot", skiprows=11)
+    smooth = interp1d(np.arange(0, 2), np.vstack((data[211], data[104])), axis=0)
+    df_smooth = pd.DataFrame(smooth([.5]), columns=df.columns)
+
+    df = df.append(df_smooth)
+
+    df = df.drop(columns='time')
+
+    # jnt2adr = env.model.get_joint_qpos_addr
+    mot = np.zeros(36)
     # while True:
-    #     for index, row in df.iterrows():
-    #         qpos = np.zeros(51)
-    #         qvel = np.zeros(51)
-    #
-    #         for joint_name in shared_joints:
-    #             addr = env.model.get_joint_qpos_addr(joint_name)
-    #             qpos[addr] = row[joint_name]
-    #
-    #         qpos[1] = -.175
-    #
-    #         env.set_state(qpos, qvel)
-    #
-    #         env.render()
-    #
-"""
+    for index, row in df.iterrows():
+        # if index in range(106, 211): #900 1300
+
+        qpos = np.zeros(36)  # last one is treadmill
+        qvel = np.zeros(36)
+
+        qpos[jnt2adr('treadmill')] = 0
+        for joint in env.model.joint_names:
+            if joint != 'treadmill':
+                addr = env.model.get_joint_qpos_addr(joint)
+                qpos[addr] = row[joint]
+
+        qpos[0] = 0
+        qpos[1] += .3
+        qpos[2] = 0
+
+        qpos[-1] = 1.25
+
+        mot = np.vstack((mot, qpos))
+
+        # env.set_state(qpos, np.zeros(36))
+
+        # env.step(np.zeros(30))
+        # env.render()
+        # ipdb.set_trace()
+
+    mot = np.delete(mot, 0, axis=0)
+
+    np.save('skeleton_walk_ref', mot)
+

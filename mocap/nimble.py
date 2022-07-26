@@ -107,8 +107,8 @@ if __name__ == "__main__":
     # mcp.load_motion_file('/home/takaraet/gait_modeling/mocap/results_ik.mot')
     # mcp.visualize_motion()
     
-#    path_osim = '/home/takaraet/gait_modeling/mocap/Rajagopal_Scaled_v2.osim'
-    path_osim = '/home/takaraet/gait_modeling/mocap/Rajagopal_Scaled.osim'
+    path_osim = '/home/takaraet/gait_modeling/mocap/Rajagopal_Scaled_v2.osim'
+#     path_osim = '/home/takaraet/gait_modeling/mocap/Rajagopal_Scaled.osim'
     file: nimble.biomechanics.OpenSimFile = nimble.biomechanics.OpenSimParser.parseOsim(path_osim)
 
     name = 'S01DN201'
