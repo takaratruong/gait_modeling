@@ -1,12 +1,12 @@
 <mujoco>
-    <compiler angle="radian" coordinate="local" meshdir="Geometry/" inertiafromgeom="auto" />
+    <compiler angle="radian" coordinate="local" meshdir="Geometry/" inertiafromgeom="auto" balanceinertia="true" boundmass="0.001" boundinertia="0.001"/>
     <default>
         <geom conaffinity="0" rgba="0.7 0.5 .3 1" margin="0.001"/>
         <site rgba="0.7 0.5 0.3 1"/>
 <!--        <joint limited="true" damping="0.5" armature="0.1" stiffness="2"/>-->
         <joint limited="true" damping="1" armature="1"/>
 
-        <motor ctrllimited="true" ctrlrange="-1 1"/>
+        <motor ctrllimited="true" ctrlrange="-.5 .5"/>
     </default>
 <!--    <option timestep="0.01"/>-->
     <option integrator="RK4" iterations="50" solver="PGS" timestep="0.01"/>
@@ -105,16 +105,16 @@
         <geom condim="3" friction="1 .1 .1" material="MatPlane" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="25 25 0.2" type="plane"/>
         <light cutoff="100" diffuse="1 1 1" dir="0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"/>
         <body name="pelvis" pos="0.000000 0.000000 0.000000" euler="1.570796 0.000000 -0.000000">
-            <joint pos="0.000000 0.000000 0.000000" damping="0" name="ground_pelvis_trans_x" type="slide" axis="1.000000 0.000000 0.000000" limited="true" range="-100.000000 100.000000"/>
-            <joint pos="0.000000 0.000000 0.000000" damping="0"  name="ground_pelvis_trans_y" type="slide" axis="0.000000 1.000000 0.000000" limited="true" range="-1.000000 2.000000"/>
-            <joint pos="0.000000 0.000000 0.000000" damping="0"  name="ground_pelvis_trans_z" type="slide" axis="0.000000 0.000000 1.000000" limited="true" range="-3.000000 3.000000"/>
+            <joint pos="0.000000 0.000000 0.000000" damping="0" stiffness="0" armature="0" name="ground_pelvis_trans_x" type="slide" axis="1.000000 0.000000 0.000000" limited="true" range="-100.000000 100.000000"/>
+            <joint pos="0.000000 0.000000 0.000000" damping="0" stiffness="0" armature="0" name="ground_pelvis_trans_y" type="slide" axis="0.000000 1.000000 0.000000" limited="true" range="-1.000000 2.000000"/>
+            <joint pos="0.000000 0.000000 0.000000" damping="0"  stiffness="0" armature="0" name="ground_pelvis_trans_z" type="slide" axis="0.000000 0.000000 1.000000" limited="true" range="-3.000000 3.000000"/>
 
-            <joint pos="0.000000 0.000000 0.000000" damping="0"  name="ground_pelvis_rot_z" type="hinge" axis="0.000000 0.000000 1.000000" limited="true" range="-3.141593 3.141593"/>
-            <joint pos="0.000000 0.000000 0.000000" damping="0"  name="ground_pelvis_rot_x" type="hinge" axis="1.000000 0.000000 0.000000" limited="true" range="-3.141593 3.141593"/>
-            <joint pos="0.000000 0.000000 0.000000" damping="0"  name="ground_pelvis_rot_y" type="hinge" axis="0.000000 1.000000 0.000000" limited="true" range="-3.141593 3.141593"/>
+            <joint pos="0.000000 0.000000 0.000000" damping="0"  stiffness="0" armature="0" name="ground_pelvis_rot_z" type="hinge" axis="0.000000 0.000000 1.000000" limited="true" range="-3.141593 3.141593"/>
+            <joint pos="0.000000 0.000000 0.000000" damping="0"   stiffness="0" armature="0" name="ground_pelvis_rot_x" type="hinge" axis="1.000000 0.000000 0.000000" limited="true" range="-3.141593 3.141593"/>
+            <joint pos="0.000000 0.000000 0.000000" damping="0"   stiffness="0" armature="0" name="ground_pelvis_rot_y" type="hinge" axis="0.000000 1.000000 0.000000" limited="true" range="-3.141593 3.141593"/>
 
+            <inertial pos="-0.0707 0.000000 0.000000" mass="6.113945" fullinertia="0.1028   0.0871   0.0579 0.000000 0.000000 0.000000"/>
 
-            <inertial pos="-0.071599 0.000000 0.000000" mass="6.113945" fullinertia="0.039593 0.039593 0.024841 0.000000 0.000000 0.000000"/>
             <camera name="side" pos="0 -.1 4.7" euler="0 0 0" mode="trackcom"/>
             <camera name="back" pos="-4.7 -.1 0" euler="0 -1.570796325 0" mode="trackcom"/>
             <geom name="pelvis_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="r_pelvis"/>
@@ -122,43 +122,43 @@
             <geom name="pelvis_ShapeNode_2" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="sacrum"/>
             <body name="femur_r" pos="-0.056992 -0.064052 0.065042" euler="-0.000000 0.000000 -0.000000">
 
-
                 <joint pos="0.000000 0.000000 0.000000" name="hip_flexion_r" type="hinge" axis="0.000000 0.000000 1.000000" limited="true"  range="-0.523599 2.094395"/>
                 <joint pos="0.000000 0.000000 0.000000" name="hip_adduction_r" type="hinge" axis="1.000000 0.000000 0.000000" limited="true"  range="-0.872665 0.523599"/>
                 <joint pos="0.000000 0.000000 0.000000" name="hip_rotation_r" type="hinge" axis="0.000000 1.000000 0.000000" limited="true" range="-0.698132 0.698132"/>
+                <inertial pos="       0    -0.17        0" mass="9.553927" fullinertia="  0.1339   0.0351   0.1412        0        0        0"/>
 
-
-                <inertial pos="-0.056992 -0.249765 0.065042" mass="9.553927" fullinertia="0.165337 0.045430 0.165337 0.000000 0.000000 0.000000"/>
                 <geom name="femur_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="r_femur"/>
                 <body name="tibia_r" pos="0.000862 -0.441847 -0.001866" euler="-0.000000 -0.000000 -0.000000">
-                    <inertial pos="-0.056130 -0.707673 0.063176" mass="3.531895" fullinertia="0.056111 0.005739 0.056111 0.000000 0.000000 0.000000"/>
+                    <inertial pos="0.0 -0.207673 0.013176" mass="3.531895" fullinertia="0.056111 0.003739 0.056111 0.000000 0.000000 0.000000"/>
                     <joint pos="-0.009007 -0.003820 -0.001576" name="walker_knee_r" type="hinge" axis="0.119156 0.021311 -0.992647" limited="true" range="0.000000 2.104472"/>
                     <geom name="tibia_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="r_tibia"/>
                     <geom name="tibia_r_ShapeNode_1" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="r_fibula"/>
                     <body name="talus_r" pos="-0.011133 -0.432296 0.000000" euler="-0.000000 0.000000 0.000000">
-                        <inertial pos="-0.067264 -0.938195 0.063176" mass="0.097869" fullinertia="0.001347 0.001118 0.001118 0.000000 0.000000 0.000000"/>
+
+                        <inertial pos="0 0 0" mass="0.097869" fullinertia="0.001    0.001    0.001 0.000000 0.000000 0.000000"/>
+
                         <joint pos="0.000000 0.000000 0.000000" name="ankle_angle_r" type="hinge" axis="-0.105014 -0.174022 0.979126" limited="true" range="-0.698132 0.523599"/>
                         <geom name="talus_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="r_talus"/>
                         <body name="calcn_r" pos="-0.046466 -0.051786 0.008832" euler="0.000000 -0.000000 -0.000000">
-                            <inertial pos="-0.020763 -0.957501 0.072009" mass="0.976311" fullinertia="0.001231 0.002776 0.002776 0.000000 0.000000 0.000000"/>
+
+                            <inertial pos=" 0.1     0.03        0" mass="0.976311" fullinertia="  0.0014   0.0039   0.0041  0.000000 0.000000 0.000000"/>
+
                             <joint pos="0.000000 0.000000 0.000000" name="subtalar_angle_r" type="hinge" axis="0.787180 0.604747 -0.120948" limited="true" range="-0.349066 0.349066"/>
                             <geom name="calcn_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="r_foot"/>
 
-<!--                            <geom name="block_foot_r" mass="0.0" pos=".11 .01 0" size="0.088 0.0275 0.045 " type="box" conaffinity="1" condim="1" contype="1" margin="0.001"/>-->
-
                             <geom name="heel_r" mass="0.0" pos=".01 .012 -.007" size="0.025" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
-                            <geom name="first_toe_joint" mass="0.0" pos=".17 0 -.03" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
-                            <geom name="pinky_toe_joint" mass="0.0" pos=".134 0 .04" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
-
-
+                            <geom name="first_toe_joint" mass="0.0" pos=".16 0.006 -.028" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
+                            <geom name="pinky_toe_joint" mass="0.0" pos=".134 0.007 .04" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
                             <body name="toes_r" pos="0.166224 -0.002165 0.001123" euler="-0.000000 0.000000 -0.000000">
-                                <inertial pos="0.087162 -0.985990 0.054494" mass="0.176952" fullinertia="0.000089 0.000168 0.000168 0.000000 0.000000 0.000000"/>
+
+                                <inertial pos=" 0.0346    0.006  -0.0175" mass="0.176952" fullinertia="  0.0001   0.0002    0.001   0.000000 0.000000 0.000000"/>
+
                                 <joint pos="0.000000 0.000000 0.000000" name="mtp_angle_r" type="hinge" axis="0.580955 0.000002 -0.813936" limited="true" range="-0.523599 0.523599"/>
                                 <geom name="toes_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="r_bofoot"/>
 
 
-                                <geom name="big_toe_point" mass="0.0" pos=".06 0 -.02" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
-                                <geom name="pinky_toe_point" mass="0.0" pos=".006 0 .050" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
+                                <geom name="big_toe_point" mass="0.0" pos=".06 0.002 -.02" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
+                                <geom name="pinky_toe_point" mass="0.0" pos=".006 0.002 .050" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
 
                             </body>
                         </body>
@@ -171,36 +171,36 @@
                 <joint pos="0.000000 0.000000 0.000000" name="hip_adduction_l" type="hinge" axis="-1.000000 0.000000 0.000000" limited="true" range="-0.872665 0.523599"/>
                 <joint pos="0.000000 0.000000 0.000000" name="hip_rotation_l" type="hinge" axis="0.000000 -1.000000 0.000000" limited="true" range="-0.698132 0.698132"/>
 
-                <inertial pos="-0.056992 -0.249765 -0.065042" mass="9.553927" fullinertia="0.165337 0.045430 0.165337 0.000000 0.000000 0.000000"/>
+                <inertial pos="       0    -0.17        0" mass="9.553927" fullinertia="  0.1339   0.0351   0.1412        0        0        0"/>
                 <geom name="femur_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="l_femur"/>
                 <body name="tibia_l" pos="0.000862 -0.441847 0.001866" euler="0.000000 0.000000 -0.000000">
-                    <inertial pos="-0.056130 -0.707673 -0.063176" mass="3.531895" fullinertia="0.056111 0.005739 0.056111 0.000000 0.000000 0.000000"/>
+                    <inertial pos="0.0 -0.207673 -0.013176" mass="3.531895" fullinertia="0.056111 0.003739 0.056111 0.000000 0.000000 0.000000"/>
                     <joint pos="-0.009007 -0.003820 0.001576" name="walker_knee_l" type="hinge" axis="-0.119156 -0.021311 -0.992647" limited="true" range="0.000000 2.104472"/>
                     <geom name="tibia_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="l_tibia"/>
                     <geom name="tibia_l_ShapeNode_1" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="l_fibula"/>
                     <body name="talus_l" pos="-0.011133 -0.432296 0.000000" euler="0.000000 -0.000000 0.000000">
-                        <inertial pos="-0.067264 -0.938195 -0.063176" mass="0.097869" fullinertia="0.001347 0.001118 0.001118 0.000000 0.000000 0.000000"/>
+
+                        <inertial pos="0 0 0" mass="0.097869" fullinertia="0.001    0.001    0.001 0.000000 0.000000 0.000000"/>
+
                         <joint pos="0.000000 0.000000 0.000000" name="ankle_angle_l" type="hinge" axis="0.105014 0.174022 0.979126" limited="true" range="-0.698132 0.523599"/>
                         <geom name="talus_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="l_talus"/>
                         <body name="calcn_l" pos="-0.046466 -0.051786 -0.008832" euler="-0.000000 0.000000 -0.000000">
 
-<!--                        <geom name="block_foot_l" mass="0.0" pos=".11 .01 0" size="0.088 0.0275 0.045 " type="box" conaffinity="1" condim="1" contype="1" margin="0.001"/>-->
-
                         <geom name="heel_l" mass="0.0" pos=".01 .012 .007" size="0.025" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
-                        <geom name="first_toe_joint_l" mass="0.0" pos=".17 0 .03" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
-                        <geom name="pinky_toe_joint_l" mass="0.0" pos=".134 0 -.04" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
+                        <geom name="first_toe_joint_l" mass="0.0" pos=".16 0.006 .028" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
+                        <geom name="pinky_toe_joint_l" mass="0.0" pos=".134 0.007 -.04" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1" />
 
 
-                            <inertial pos="-0.020763 -0.957501 -0.072009" mass="0.976311" fullinertia="0.001231 0.002776 0.002776 0.000000 0.000000 0.000000"/>
+                            <inertial pos=" 0.1     0.03        0" mass="0.976311" fullinertia="  0.0014   0.0039   0.0041  0.000000 0.000000 0.000000"/>
                             <joint pos="0.000000 0.000000 0.000000" name="subtalar_angle_l" type="hinge" axis="-0.787180 -0.604747 -0.120948" limited="true" range="-0.349066 0.349066"/>
                             <geom name="calcn_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="l_foot"/>
                             <body name="toes_l" pos="0.166224 -0.002165 -0.001123" euler="-0.000000 -0.000000 0.000000">
-                                <inertial pos="0.087162 -0.985990 -0.054494" mass="0.176952" fullinertia="0.000089 0.000168 0.000168 0.000000 0.000000 0.000000"/>
+                                <inertial pos=" 0.0346    0.006  0.0175" mass="0.176952" fullinertia="  0.0001   0.0002    0.001   0.000000 0.000000 0.000000"/>
                                 <joint pos="0.000000 0.000000 0.000000" name="mtp_angle_l" type="hinge" axis="-0.580955 0.000002 -0.813936" limited="true" range="-0.523599 0.523599"/>
                                 <geom name="toes_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="l_bofoot"/>
 
-                                <geom name="big_toe_point_l" mass="0.0" pos=".06 0 .02" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
-                                <geom name="pinky_toe_point_l" mass="0.0" pos=".006 0 -.050" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
+                                <geom name="big_toe_point_l" mass="0.0" pos=".06 0.002 .02" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
+                                <geom name="pinky_toe_point_l" mass="0.0" pos=".006 0.002 -.050" size="0.012" type="sphere" conaffinity="1" condim="1" contype="1" margin="0.001" rgba=".8 .2 .1 1"/>
 
                             </body>
                         </body>
@@ -213,29 +213,31 @@
             <joint pos="0.000000 0.000000 0.000000" name="lumbar_bending" type="hinge" axis="1.000000 0.000000 0.000000" limited="true" range="-1.570796 1.570796"/>
             <joint pos="0.000000 0.000000 0.000000" name="lumbar_rotation" type="hinge" axis="0.000000 1.000000 0.000000" limited="true" range="-1.570796 1.570796"/>
 
-                <inertial pos="-0.129639 0.342571 0.000000" mass="17.305956" fullinertia="0.770781 0.488426 0.770781 0.000000 0.000000 0.000000"/>
+                <inertial pos="   -0.03     0.32        0" mass="17.305956" fullinertia=" 1.4745   0.7555   1.4314   0.000000 0.000000 0.000000"/>
                 <geom name="torso_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="hat_spine"/>
                 <geom name="torso_ShapeNode_1" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="hat_jaw"/>
                 <geom name="torso_ShapeNode_2" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="hat_skull"/>
                 <geom name="torso_ShapeNode_3" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="hat_ribs_scap"/>
                 <body name="humerus_r" pos="0.002909 0.320492 0.184790" euler="-0.000000 0.000000 -0.000000">
-
                     <joint pos="0.000000 0.000000 0.000000" name="arm_flex_r" type="hinge" axis="0.000000 0.000000 1.000000" limited="true" range="-1.570796 1.570796"/>
                     <joint pos="0.000000 0.000000 0.000000" name="arm_add_r" type="hinge" axis="1.000000 0.000000 0.000000" limited="true" range="-2.094395 1.570796"/>
                     <joint pos="0.000000 0.000000 0.000000" name="arm_rot_r" type="hinge" axis="0.000000 1.000000 0.000000" limited="true" range="-1.570796 1.570796"/>
-
-                    <inertial pos="-0.099072 0.237425 0.184790" mass="2.341080" fullinertia="0.013443 0.008058 0.013443 0.000000 0.000000 0.000000"/>
+                    <inertial pos="0 -0.164502  0" mass="2.341080" fullinertia="0.011946 0.004121 0.013409 0.000000 0.000000 0.000000"/>
                     <geom name="humerus_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="humerus_rv"/>
                     <body name="ulna_r" pos="0.014876 -0.260297 -0.014392" euler="-0.000000 0.000000 -0.000000">
-                        <inertial pos="-0.084196 0.009609 0.170397" mass="0.338503" fullinertia="0.001528 0.000265 0.001528 0.000000 0.000000 0.000000"/>
+
+                        <inertial pos="0 -0.120525        0" mass="0.338503" fullinertia="0.002962 0.000618 0.003213  0.000000 0.000000 0.000000"/>
+
                         <joint pos="0.000000 0.000000 0.000000" name="elbow_flex_r" type="hinge" axis="0.226047 0.022269 0.973862" limited="true" range="0.000000 2.618000"/>
                         <geom name="ulna_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="ulna_rv"/>
                         <body name="radius_r" pos="-0.005045 -0.012637 0.026731" euler="-0.000000 -0.000000 -0.000000">
-                            <inertial pos="-0.089241 -0.003028 0.197128" mass="0.338503" fullinertia="0.001528 0.000265 0.001528 0.000000 0.000000 0.000000"/>
+
+                            <inertial pos="0 -0.120525        0" mass="0.338503" fullinertia="0.002962 0.000618 0.003213 0.000000 0.000000 0.000000"/>
+
                             <joint pos="0.000000 0.000000 0.000000" name="pro_sup_r" type="hinge" axis="0.056398 0.998406 0.001953" limited="true" range="0.000000 1.570796"/>
                             <geom name="radius_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="radius_rv"/>
                             <body name="hand_r" pos="-0.006598 -0.229128 0.013948" euler="0.000000 -0.000000 -0.000000">
-                                <inertial pos="-0.095839 -0.185052 0.211077" mass="0.370691" fullinertia="0.000764 0.000468 0.001147 0.000000 0.000000 0.000000"/>
+                                <inertial pos="  0 -0.068095        0" mass="0.370691" fullinertia="0.000892 0.000547  0.00134  0.000000 0.000000 0.000000"/>
                                 <joint pos="0.000000 0.000000 0.000000" name="wrist_flex_r" type="hinge" axis="-0.000004 0.000004 1.000000" limited="true" range="-1.22173  1.22173"/>
                                 <geom name="hand_r_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="pisiform_rvs"/>
                                 <geom name="hand_r_ShapeNode_1" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="lunate_rvs"/>
@@ -274,18 +276,18 @@
                     <joint pos="0.000000 0.000000 0.000000" name="arm_add_l" type="hinge" axis="-1.000000 0.000000 0.000000" limited="true" range="-2.094395 1.570796"/>
                     <joint pos="0.000000 0.000000 0.000000" name="arm_rot_l" type="hinge" axis="0.000000 -1.000000 0.000000" limited="true" range="-1.570796 1.570796"/>
 
-                    <inertial pos="-0.099072 0.237425 -0.184790" mass="2.341080" fullinertia="0.013443 0.008058 0.013443 0.000000 0.000000 0.000000"/>
+                    <inertial pos="0 -0.164502  0" mass="2.341080" fullinertia="0.011946 0.004121 0.013409 0.000000 0.000000 0.000000"/>
                     <geom name="humerus_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="humerus_lv"/>
                     <body name="ulna_l" pos="0.014876 -0.260297 0.014392" euler="0.000000 -0.000000 -0.000000">
-                        <inertial pos="-0.084196 0.009609 -0.170397" mass="0.338503" fullinertia="0.001528 0.000265 0.001528 0.000000 0.000000 0.000000"/>
+                        <inertial pos="0 -0.120525        0" mass="0.338503" fullinertia="0.002962 0.000618 0.003213  0.000000 0.000000 0.000000"/>
                         <joint pos="0.000000 0.000000 0.000000" name="elbow_flex_l" type="hinge" axis="-0.226047 -0.022269 0.973862" limited="true" range="0.000000 2.618000"/>
                         <geom name="ulna_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="ulna_lv"/>
                         <body name="radius_l" pos="-0.005045 -0.012637 -0.026731" euler="0.000000 0.000000 -0.000000">
-                            <inertial pos="-0.089241 -0.003028 -0.197128" mass="0.338503" fullinertia="0.001528 0.000265 0.001528 0.000000 0.000000 0.000000"/>
+                            <inertial pos="0 -0.120525        0" mass="0.338503" fullinertia="0.002962 0.000618 0.003213 0.000000 0.000000 0.000000"/>
                             <joint pos="0.000000 0.000000 0.000000" name="pro_sup_l" type="hinge" axis="-0.056398 -0.998406 0.001953" limited="true" range="0.000000 1.570796"/>
                             <geom name="radius_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="radius_lv"/>
                             <body name="hand_l" pos="-0.006598 -0.229128 -0.013948" euler="-0.000000 -0.000000 0.000000">
-                                <inertial pos="-0.095839 -0.185052 -0.211077" mass="0.370691" fullinertia="0.000764 0.000468 0.001147 0.000000 0.000000 0.000000"/>
+                                <inertial pos="  0 -0.068095        0" mass="0.370691" fullinertia="0.000892 0.000547  0.00134  0.000000 0.000000 0.000000"/>
                                 <joint pos="0.000000 0.000000 0.000000" name="wrist_flex_l" type="hinge" axis="-0.000004 -0.000004 1.000000" limited="true" range="-1.22173  1.22173"/>
                                 <geom name="hand_l_ShapeNode_0" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="pisiform_lvs"/>
                                 <geom name="hand_l_ShapeNode_1" pos="0.000000 0.000000 0.000000" euler="-0.000000 0.000000 -0.000000" type="mesh" mesh="lunate_lvs"/>
@@ -322,30 +324,30 @@
         </body>
 
 
-<!--    <body name="treadmill" pos="0 0 0">-->
-<!--        <geom pos="0 0 .2" friction="1 .1 .1"  material="MatPlane" name="treadmill"  rgba=".49 .5 .5 1" mass="20000" size="50 1.5 0.1" type="box" condim="3" />-->
-<!--        <joint name="treadmill" axis = "1 0 0 " pos="0 0 0" range="-200 200" type="slide"/>-->
-<!--    </body>-->
+    <body name="treadmill" pos="0 0 0">
+        <geom pos="0 0 .2" friction="1 .1 .1"  material="MatPlane" name="treadmill"  rgba=".49 .5 .5 1" mass="20000" size="50 1.5 0.1" type="box" condim="3" />
+        <joint name="treadmill" axis = "1 0 0 " pos="0 0 0" range="-200 200" type="slide"/>
+    </body>
 
     </worldbody>
 
 
     <actuator>
-        <motor gear="300" joint="hip_flexion_r" name="hip_flexion_r"/>
+        <motor gear="200" joint="hip_flexion_r" name="hip_flexion_r"/>
         <motor gear="200" joint="hip_adduction_r" name="hip_adduction_r"/>
         <motor gear="200" joint="hip_rotation_r" name="hip_rotation_r"/>
 
-        <motor gear="200" joint="walker_knee_r" name="walker_knee_r"/>
-        <motor gear="120" joint="ankle_angle_r" name="ankle_angle_r"/>
+        <motor gear="150" joint="walker_knee_r" name="walker_knee_r"/>
+        <motor gear="90" joint="ankle_angle_r" name="ankle_angle_r"/>
         <motor gear="90" joint="subtalar_angle_r" name="subtalar_angle_r"/>
         <motor gear="90" joint="mtp_angle_r" name="mtp_angle_r"/>
 
-        <motor gear="300" joint="hip_flexion_l" name="hip_flexion_l"/>
+        <motor gear="200" joint="hip_flexion_l" name="hip_flexion_l"/>
         <motor gear="200" joint="hip_adduction_l" name="hip_adduction_l"/>
         <motor gear="200" joint="hip_rotation_l" name="hip_rotation_l"/>
 
-        <motor gear="200" joint="walker_knee_l" name="walker_knee_l"/>
-        <motor gear="120" joint="ankle_angle_l" name="ankle_angle_l"/>
+        <motor gear="150" joint="walker_knee_l" name="walker_knee_l"/>
+        <motor gear="90" joint="ankle_angle_l" name="ankle_angle_l"/>
         <motor gear="90" joint="subtalar_angle_l" name="subtalar_angle_l"/>
         <motor gear="90" joint="mtp_angle_l" name="mtp_angle_l"/>
 

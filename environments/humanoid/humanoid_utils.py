@@ -3,53 +3,54 @@ import numpy as np
 
 def flip_position(position):
     flipped_pos = np.concatenate((
-        np.array([-1 * position[0]]),  # y
-        np.array([position[1]]),  # z
+        np.array([position[0]]),  # x
+        np.array([-1 * position[1]]),  # y
+        np.array([position[2]]),  # z
 
-        np.array([position[2]]),  # w
-        np.array([-1 * position[3]]),  # x
-        np.array([position[4]]),  # y
-        np.array([-1 * position[5]]),  # z
+        np.array([position[3]]),  # w
+        np.array([-1 * position[4]]),  # x
+        np.array([position[5]]),  # y
+        np.array([-1 * position[6]]),  # z
 
         # flip chest
-        np.array([-1 * position[6]]),
-        np.array([position[7]]),
-        np.array([-1 * position[8]]),
+        np.array([-1 * position[7]]),
+        np.array([position[8]]),
+        np.array([-1 * position[9]]),
 
         # flip neck
-        np.array([-1 * position[9]]),
-        np.array([position[10]]),
-        np.array([-1 * position[11]]),
+        np.array([-1 * position[10]]),
+        np.array([position[11]]),
+        np.array([-1 * position[12]]),
 
         # flip shoulders and elbow
-        np.array([-1 * position[16]]),
-        np.array([1 * position[17]]),
-        np.array([-1 * position[18]]),
-        np.array([position[19]]),  # elbow
+        np.array([-1 * position[17]]),
+        np.array([1 * position[18]]),
+        np.array([-1 * position[19]]),
+        np.array([position[20]]),  # elbow
 
-        np.array([-1 * position[12]]),
-        np.array([1 * position[13]]),
-        np.array([-1 * position[14]]),
-        np.array([position[15]]),  # elbow
+        np.array([-1 * position[13]]),
+        np.array([1 * position[14]]),
+        np.array([-1 * position[15]]),
+        np.array([position[16]]),  # elbow
 
         # flip hip knee and ankle
         # position[27:35],
-        np.array([-1 * position[27]]),  # hip
-        np.array([1 * position[28]]),  # hip
-        np.array([-1 * position[29]]),  # hip
-        np.array([position[30]]),  # knee
-        np.array([-1 * position[31]]),  # ankle
-        np.array([1 * position[32]]),  # ankle
-        np.array([-1 * position[33]]),  # ankle
+        np.array([-1 * position[28]]),  # hip
+        np.array([1 * position[29]]),  # hip
+        np.array([-1 * position[30]]),  # hip
+        np.array([position[31]]),  # knee
+        np.array([-1 * position[32]]),  # ankle
+        np.array([1 * position[33]]),  # ankle
+        np.array([-1 * position[34]]),  # ankle
 
         # position[20:27],
-        np.array([-1 * position[20]]),  # hip
-        np.array([1 * position[21]]),  # hip
-        np.array([-1 * position[22]]),  # hip
-        np.array([position[23]]),  # knee
-        np.array([-1 * position[24]]),  # ankle
-        np.array([1 * position[25]]),  # ankle
-        np.array([-1 * position[26]]),  # ankle
+        np.array([-1 * position[21]]),  # hip
+        np.array([1 * position[22]]),  # hip
+        np.array([-1 * position[23]]),  # hip
+        np.array([position[24]]),  # knee
+        np.array([-1 * position[25]]),  # ankle
+        np.array([1 * position[26]]),  # ankle
+        np.array([-1 * position[27]]),  # ankle
     ))
 
     return flipped_pos

@@ -6,6 +6,7 @@ p = configargparse.ArgParser()
 """ Logistics (Naming/Loading/Saving/etc..) """
 p.add('-n', '--exp_name', required=True)
 p.add('-c', '--config', required=True, is_config_file=True, help='config file path')
+p.add('--alg', type=str, default='ppo', help='ppo or amp')
 
 p.add('--wandb', action='store_true')
 p.add('--project_name', type=str, required=True)

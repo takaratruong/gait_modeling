@@ -16,7 +16,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
             self,
             xml_file="skeleton_foot_contact_no_treadmill.xml",
             terminate_when_unhealthy=True,
-            healthy_z_range=(.85, 10.0), #1.15
+            healthy_z_range=(1.15, 10.0), # .85 1.15
             args=None
     ):
         utils.EzPickle.__init__(**locals())
@@ -55,8 +55,9 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
         mujoco_env_skeleton.MujocoEnv.__init__(self, xml_file, self.frame_skip)
         self.init_qvel[0] = 1
         qpos = self.gait_ref(self.initial_phase_offset)
-        qpos[1] -= .3
-        self.set_state(qpos[:-1], self.init_qvel)
+        # qpos[1] -= .3
+        # self.set_state(qpos[:-1], self.init_qvel)
+        self.set_state(qpos, self.init_qvel)
 
     @property
     def is_healthy(self):
@@ -74,18 +75,19 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
 
         ##joint reward
         # joint_err = np.sum([(self.sim.data.qpos[jnt2addr(joint)] - ref[jnt2addr(joint)]) ** 2 for joint in joint_names])
-        # joint_err = np.sum( (self.sim.data.qpos[6:-1] - ref[6:-1] ) ** 2 )
-        joint_err = np.sum( (self.sim.data.qpos[6:] - ref[6:-1] ) ** 2 )
+        joint_err = np.sum( (self.sim.data.qpos[6:-1] - ref[6:-1] ) ** 2 )
+        # joint_err = np.sum( (self.sim.data.qpos[6:] - ref[6:-1] ) ** 2 )
 
         joint_rew = np.exp(-2 * joint_err)
 
         # root pos/vel reward, Note: world frame z-up , model frame y-up
-        pos_err = 10 * (1.25 - self.sim.data.get_body_xvelp('torso')[0]) ** 2 + \
+        pos_err = 10 * (0 - self.sim.data.get_body_xvelp('torso')[0]) ** 2 + \
                   1 * (0 - self.sim.data.get_body_xvelp('torso')[1]) ** 2 + \
-                  1 * (0 - self.sim.data.get_body_xpos('torso')[1]) ** 2
-                # 3 * (0 - self.sim.data.get_body_xpos('torso')[0]) ** 2 + \
+                  1 * (0 - self.sim.data.get_body_xpos('torso')[1]) ** 2 + \
+                  5 * (0 - self.sim.data.get_body_xvelp('pelvis')[0]) ** 2 + \
+                  1 * (0 - self.sim.data.get_body_xvelp('pelvis')[1]) ** 2
+            # 3 * (0 - self.sim.data.get_body_xpos('torso')[0]) ** 2 + \
 
-        # print(self.sim.data.get_body_xvelp('torso'))
         pos_rew = np.exp(-1 * pos_err)
 
         # rotation reward
@@ -146,11 +148,13 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
         if phase_target <= .5:
             gait_ref = self.gait_ref(phase_target)
         else:
-            # only flipped because reference motion of full gait cycle is not symmetrical.
-           gait_ref = self.gait_ref(phase_target - .5)
-           gait_ref = reflect_sagital(gait_ref, self.model.get_joint_qpos_addr)
+            gait_ref = self.gait_ref(phase_target)
 
-        gait_ref[1] -= .3
+            # only flipped because reference motion of full gait cycle is not symmetrical.
+            # gait_ref = self.gait_ref(phase_target - .5)
+            # gait_ref = reflect_sagital(gait_ref, self.model.get_joint_qpos_addr)
+
+        # gait_ref[1] -= .3
         return gait_ref
 
     def get_force(self):
@@ -173,6 +177,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
         self.sim.data.qfrc_applied[1] = 0
 
     def step(self, action):
+        assert len(action) == 30, 'incorrect action size'
         action = np.array(action.tolist()).copy()
         # ipdb.set_trace()
         joint_action = action[:-1] if self.phase <= .5 else reflect_action(action[:-1], self.model.actuator_name2id)
@@ -181,26 +186,31 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
 
         self.action_phase_offset += phase_action
 
-        target_ref = self.target_reference  # change later
-
+        target_ref = self.target_reference  # change late
+        assert len(target_ref) == self.model.nq, 'wrong reference size'
         # Treadmill
-        # print(len(joint_action))
+
         final_target = joint_action + target_ref[6:-1]  # add action to joint ref to create final joint target
+        # print(len(final_target))
 
         for _ in range(self.frame_skip):
             # Treadmill
-            joint_obs = self.sim.data.qpos[6:].copy()
-            joint_vel_obs = self.sim.data.qvel[6:].copy()
+            joint_obs = self.sim.data.qpos[6:-1].copy()
+            joint_vel_obs = self.sim.data.qvel[6:-1].copy()
+
+            # joint_obs = self.sim.data.qpos[6:].copy()
+            # joint_vel_obs = self.sim.data.qvel[6:].copy()
+
 
             error = final_target - joint_obs
             error_der = joint_vel_obs
 
-            torque = 120 * error - 10 * error_der
+            torque = 100 * error - 10 * error_der
 
             # Treadmill
-            # self.sim.data.set_joint_qvel('treadmill', 0)#-self.treadmill_velocity)  # keep treadmill moving
+            self.sim.data.set_joint_qvel('treadmill', 0)#-self.treadmill_velocity)  # keep treadmill moving
 
-            self.do_simulation(torque / 100, 1)
+            self.do_simulation(torque / 5, 1)
 
             # self.set_state(self.target_reference[:-1], self.init_qvel)
 
@@ -225,10 +235,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
 
         qpos = self.gait_ref(self.phase)
 
-        #Treadmill
-        qpos[1] -= .3
-
-        self.set_state(qpos[:-1], self.init_qvel)
+        self.set_state(qpos, self.init_qvel)
 
         self.total_reward = 0
         self.force = self.get_force()

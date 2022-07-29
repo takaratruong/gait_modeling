@@ -12,7 +12,8 @@ max_ep_time = 2000
 num_steps = 100
 
 ## Gait Parameters ##
-gait_ref_file = ../environments/skeleton/skeleton_walk_ref.npy
+gait_ref_file = ../environments/humanoid/humanoid_subject1_walk_ref.txt
+treadmill_velocity = 1
 #gait_ref_vel =
 #gait_cycle_time =
 

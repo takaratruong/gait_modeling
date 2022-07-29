@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     print("Exp Name: ", args.exp_name)
     print("Config File:", args.config)
-
+    print("Algorithm:", args.alg)
     run = None
     if args.wandb:
         run = wandb.init(project=args.project_name, config=args, name=args.exp_name, monitor_gym=True, dir=args.log_dir)

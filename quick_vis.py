@@ -10,6 +10,7 @@ from environments.walker2d.walker2d_env import WalkerEnv
 # from environments.humanoid.human_env_test import Humanoid_test_env
 from environments.rajagopal.rajagopal_env import RajagopalEnv
 from environments.skeleton.skeleton_env import SkeletonEnv
+from environments.humanoid.humanoid_treadmill_env import HumanoidTreadmillEnv
 
 import ipdb
 from scipy.spatial.transform import Rotation as R
@@ -25,31 +26,51 @@ from stable_baselines3.common.env_util import make_vec_env
 
 if __name__ == '__main__':
     args = load_args()
-    env = SkeletonEnv(args=args)
+    # env = SkeletonEnv(args=args)
+    env = HumanoidTreadmillEnv(args=args)
 
-    num_inputs = env.observation_space.shape[0]
-    num_outputs = env.action_space.shape[0]
-    model = ActorCriticNet(num_inputs, num_outputs, [128, 128])
-    model.load_state_dict(torch.load("results/models/no_treadmill_complex_foot/no_treadmill_complex_foot_iter5100.pt"))
-    model.cuda()
-
-    # print(env.model.joint_names)
+    # num_inputs = env.observation_space.shape[0]
+    # num_outputs = env.action_space.shape[0]
+    # model = ActorCriticNet(num_inputs, num_outputs, [128, 128])
+    # model.load_state_dict(torch.load("results/models/fixed_inertia/fixed_inertia_iter700.pt"))
+    # model.cuda()
 
     while True:
         state = env.reset()
         done = False
         while not done:
-            # act = np.zeros(30)
-            with torch.no_grad():
-                act = model.sample_best_actions(torch.from_numpy(state).cuda().type(torch.cuda.FloatTensor)).cpu().numpy()
-                print("act", act)
-                print()
+            act = np.zeros(29) # 28 actuators + 1 phase
+            # with torch.no_grad():
+            #     act = model.sample_best_actions(torch.from_numpy(state).cuda().type(torch.cuda.FloatTensor)).cpu().numpy()
+                # print("act", act)
+                # print(len(act))
+            # act = np.zeros(30)#.cuda().type()
+
+            state, rew, done, _ = env.step(act)
+            env.render()
+
+            if done is True:
+                print('restart')
+
+"""
+
+    while True:
+        state = env.reset()
+        done = False
+        while not done:
+            act = np.zeros(30)
+            # with torch.no_grad():
+            #     act = model.sample_best_actions(torch.from_numpy(state).cuda().type(torch.cuda.FloatTensor)).cpu().numpy()
+                # print("act", act)
+                # print(len(act))
             # act = np.zeros(30)#.cuda().type()
 
             state, rew, done, _ = env.step(act)
             env.render()
 
 
+
+"""
 
 
 

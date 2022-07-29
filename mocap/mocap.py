@@ -1,14 +1,10 @@
-import nimblephysics as nimble
 import numpy as np
 from pathlib import Path
 import pprint
 
 from typing import List
 from typing import Dict
-from typing import Union
-from typing import Optional
 from typing import Tuple
-from typing import Any
 from scipy.interpolate import interp1d
 
 class MoCap:
@@ -16,7 +12,7 @@ class MoCap:
         self._hz = 100
         self._frame_skip = env_frame_skip
         self._step_size = env_step_size
-        self._upper_limit = 21 - 1/100 - env_frame_skip*env_step_size # time lim of all mocap files, single frame removed for vel calc,
+        self._upper_limit = 21 - 1/100 - env_frame_skip*env_step_size -1# time lim of all mocap files (experimental detail), single frame removed for vel calc, and a couple more in case
 
         self.train_traj = self.load_traj(train_path)
         self.val_traj = self.load_traj(val_path)
@@ -28,7 +24,7 @@ class MoCap:
             trajectories[np_name.stem] = interp1d(np.arange(0, data.shape[0]) / self._hz, data, axis=0)
         return trajectories
 
-    def sample_expert(self, batch_size: int = 100) -> np.ndarray:
+    def sample_expert(self, batch_size: int = 100) -> Tuple[np.ndarray, np.ndarray]:
         rand_key = np.random.choice(self.get_keys('train'))
         curr_traj_func = self.train_traj[rand_key]
 
@@ -38,7 +34,7 @@ class MoCap:
         curr_state = curr_traj_func(curr_state_time)
         next_state = curr_traj_func(next_state_time)
 
-        return np.hstack((curr_state, next_state))
+        return curr_state, next_state
 
     def get_keys(self, dataset: str) -> List[str]:
         if dataset == 'train':
@@ -50,8 +46,13 @@ if __name__ == "__main__":
     t_path = '/home/takaraet/gait_modeling/mocap/SubjectData_1/train_traj'
     v_path = '/home/takaraet/gait_modeling/mocap/SubjectData_1/val_traj'
 
-    mocap = MoCap(t_path, v_path, 1, .01)
+    mocap = MoCap(t_path, v_path, 8, .01)
 
     train_keys = mocap.get_keys('train')
 
-    print(mocap.sample_expert(10).shape)    # pprint.pprint(mocap.train_traj)
+    print(mocap.train_traj[train_keys[0]](12))
+
+
+    print(train_keys)
+    batch = mocap.sample_expert(100000)
+    # print(batch)

@@ -10,7 +10,7 @@ from scipy.interpolate import interp1d
 import ipdb
 
 from utils.amp_models import ActorCriticNet, Discriminator
-
+from mocap.mocap import MoCap
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -145,6 +145,7 @@ class RL(object):
                     ave_test_reward += total_reward / num_test
                     total_rewards.append(total_reward)
                     break
+
         # print("avg test reward is", ave_test_reward)
         reward_mean = np.mean(total_rewards)
         reward_std = np.std(total_rewards)
@@ -172,8 +173,6 @@ class RL(object):
         return reward_mean, reward_std , ep_len_mean, ep_len_std
 
     def feature_extractor(self, state):
-        cols = [0, 1, 2, 3, 4, 5, 6, 7, 8, 17]
-        #return state[:, cols]
         return state
 
     def collect_samples_vec(self, num_samples, start_state=None, noise=-2.5, env_index=0, random_seed=1):
@@ -204,6 +203,7 @@ class RL(object):
         self.total_rewards = []
         start = time.time()
         state = torch.from_numpy(state).to(device).type(torch.cuda.FloatTensor) #DIFF
+        # print(state.shape)
         while samples < num_samples:
             with torch.no_grad():
                 action, mean_action = self.gpu_model.sample_actions(state)
@@ -223,8 +223,8 @@ class RL(object):
 
             next_states.append(next_state.clone())
 
-            reward = reward# self.discriminator.compute_disc_reward(self.feature_extractor(state), self.feature_extractor(next_state)) #* 0.0 + 1. * reward
-
+            if self.params.alg == 'amp':
+                reward = self.discriminator.compute_disc_reward(state[:,:-1], next_state[:,:-1]) # DISC
             rewards.append(reward.clone())
 
             state = next_state.clone()
@@ -249,23 +249,6 @@ class RL(object):
         self.episode_lengths = self.env.get_elapsed_time()
         #print("processing time", time.time() - start)
 
-    """
-    FIX
-    """
-    def load_motion_data(self):
-        #self.motion_data = np.loadtxt("environments/walker2d/2d_walking.txt")
-        #self.expert_ref = np.load('expert_motion.npy')
-
-        #self.ref = np.loadtxt("environments/walker2d/2d_walking.txt")
-        #self.gait_ref = interp1d(np.arange(0, 11) / 10, self.ref, axis=0)
-        #self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), self.ref)) / .1, axis=0), axis=0)
-
-        #self.motion_data[:, 3:5] *= -1
-        #self.motion_data[:, 6:8] *= -1
-        #self.motion_data[:, 1] += 1.5
-
-        pass
-
     """FIX"""
     def sample_motion_data(self, phase_cnt):
         """ SPECIFIC TO 2dWalker"""
@@ -284,11 +267,9 @@ class RL(object):
 
     def sample_expert_motion(self, batch_size):
 
-        idx = np.random.randint(self.expert_ref.shape[0], size=batch_size)
+        states, next_states = self.mocap.sample_expert(batch_size)
 
-        samples = self.expert_ref[idx, :]
-
-        return torch.from_numpy(self.feature_extractor(samples[:, 0, :])).float().to(device), torch.from_numpy(self.feature_extractor(samples[:, 1, :])).float().to(device)
+        return torch.from_numpy(states).float().to(device), torch.from_numpy(next_states).float().to(device)
 
     """ FIX """
     def update_discriminator(self, batch_size, num_epoch):
@@ -299,7 +280,7 @@ class RL(object):
         for k in range(num_epoch):
             batch_states, batch_next_states = self.storage.discriminator_sample(batch_size)
 
-            policy_d = self.discriminator.compute_disc(self.feature_extractor(batch_states), self.feature_extractor(batch_next_states)) # 8
+            policy_d = self.discriminator.compute_disc(batch_states[:,:-1], batch_next_states[:,:-1]) # # DISC
             policy_loss = (policy_d + torch.ones(policy_d.size(), device=device)) ** 2
             policy_loss = policy_loss.mean()
 
@@ -420,7 +401,7 @@ class RL(object):
         max_samples = self.num_envs*self.params.num_steps #6000
 
         self.storage = PPOStorage(self.num_inputs, self.num_outputs, max_size=max_samples)
-        seeds = [i * 100 for i in range(num_threads)]
+        # seeds = [i * 100 for i in range(num_threads)]
 
         self.explore_noise = mp.Value("f", -2.5)
         self.base_noise = np.ones(self.num_outputs)
@@ -428,7 +409,12 @@ class RL(object):
         self.model.set_noise(noise)
         self.gpu_model.set_noise(noise)
         self.env.reset()
-        self.load_motion_data()
+
+        train_path = '/home/takaraet/gait_modeling/mocap/SubjectData_1/train_traj'
+        val_path = '/home/takaraet/gait_modeling/mocap/SubjectData_1/val_traj'
+        self.mocap = MoCap(train_path, val_path, self.params.frame_skip, .01)
+
+
         for iterations in range(200000): #200000
 
             print("------------------------------")
@@ -436,19 +422,20 @@ class RL(object):
             iteration_start = time.time()
             while self.storage.counter < max_samples:
                 self.collect_samples_vec(self.params.num_steps, noise=noise)
-            start = time.time()
 
             critic_loss = self.update_critic(max_samples // 4, 40)
             actor_loss = self.update_actor(max_samples // 4, 40)
-            #disc_loss = self.update_discriminator(max_samples // 4, 40) #commented out
+
+            if self.params.alg == 'amp':
+                disc_loss = self.update_discriminator(max_samples // 4, 40)
+                if self.params.wandb:
+                    wandb.log({"step": iterations, "train/disc loss": disc_loss})
+
             self.storage.clear()
 
             if (iterations) % self.params.vid_freq == 0 and self.vid_callback is not None:
                 self.vid_callback.save_video(self.gpu_model)
 
-            if (iterations) % 1 == 0:
-                if self.params.wandb:
-                    wandb.log({"train/critic loss": critic_loss, "train/actor loss": actor_loss, "train/disc loss": -1})
 
             if (iterations) % 5 == 0:
                 reward_mean, reward_std, ep_len_mean, ep_len_std = self.run_test_with_noise(num_test=2)
@@ -456,10 +443,12 @@ class RL(object):
                 print("ep len: ", np.round(ep_len_mean,3), u"\u00B1" ,np.round(ep_len_std,3))
 
                 if self.params.wandb:
-                    wandb.log({"eval/reward": reward_mean, "eval/ep_len": ep_len_mean} )
+                    wandb.log({"step": iterations, "eval/reward": reward_mean, "eval/ep_len": ep_len_mean} )
 
-            #print("update policy time", time.time() - start)
-            print("time", np.round(time.time() - iteration_start,3) )
+            if self.params.wandb:
+                wandb.log({"step": iterations, "train/critic loss": critic_loss, "train/actor loss": actor_loss})
+
+            print("iteration time", np.round(time.time() - iteration_start, 3))
             print()
 
             if (iterations) % 100 == 0:
