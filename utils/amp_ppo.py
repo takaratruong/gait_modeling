@@ -120,6 +120,9 @@ class RL(object):
         self.total_rewards = []
         self.episode_lengths = []
 
+        self.actor_optimizer = optim.AdamW(self.gpu_model.parameters(), lr=1e-4)
+        self.critic_optimizer = optim.AdamW(self.gpu_model.parameters(), lr=1e-4)
+
     def run_test(self, num_test=1):
         state = self.env.reset()
         ave_test_reward = 0
@@ -203,7 +206,6 @@ class RL(object):
         self.total_rewards = []
         start = time.time()
         state = torch.from_numpy(state).to(device).type(torch.cuda.FloatTensor) #DIFF
-        # print(state.shape)
         while samples < num_samples:
             with torch.no_grad():
                 action, mean_action = self.gpu_model.sample_actions(state)
@@ -310,7 +312,7 @@ class RL(object):
     # removed fresh update
     def update_critic(self, batch_size, num_epoch):
         self.gpu_model.train()
-        optimizer = optim.Adam(self.gpu_model.parameters(), lr=10 * self.lr)
+        optimizer = self.critic_optimizer#optim.Adam(self.gpu_model.parameters(), lr=10 * self.lr)
 
         storage = self.storage
         gpu_model = self.gpu_model
@@ -334,7 +336,7 @@ class RL(object):
 
     def update_actor(self, batch_size, num_epoch):
         self.gpu_model.train()
-        optimizer = optim.Adam(self.gpu_model.parameters(), lr=self.lr)
+        optimizer = self.actor_optimizer #optim.Adam(self.gpu_model.parameters(), lr=self.lr)
 
         storage = self.storage
         gpu_model = self.gpu_model
@@ -401,9 +403,9 @@ class RL(object):
         max_samples = self.num_envs*self.params.num_steps #6000
 
         self.storage = PPOStorage(self.num_inputs, self.num_outputs, max_size=max_samples)
-        # seeds = [i * 100 for i in range(num_threads)]
+        seeds = [i * 100 for i in range(num_threads)]
 
-        self.explore_noise = mp.Value("f", -2.5)
+        self.explore_noise = mp.Value("f", -2.0)
         self.base_noise = np.ones(self.num_outputs)
         noise = self.base_noise * self.explore_noise.value
         self.model.set_noise(noise)
@@ -421,7 +423,8 @@ class RL(object):
             print("iteration: ", iterations)
             iteration_start = time.time()
             while self.storage.counter < max_samples:
-                self.collect_samples_vec(self.params.num_steps, noise=noise)
+                self.collect_samples_vec(self.params.num_steps//2, noise=noise)
+            start = time.time()
 
             critic_loss = self.update_critic(max_samples // 4, 40)
             actor_loss = self.update_actor(max_samples // 4, 40)
