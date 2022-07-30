@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import os
 
-
 from gym import error, spaces
 from gym.utils import seeding
 import numpy as np

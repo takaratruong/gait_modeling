@@ -18,32 +18,14 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(
             self,
             xml_file="walker2d.xml",
-            forward_reward_weight=1.0,
-            ctrl_cost_weight=1e-3,
-            healthy_reward=1.0,
-            terminate_when_unhealthy=True,
             healthy_z_range=(0.8, 2.0),
             healthy_angle_range=(-1.0, 1.0),
-            reset_noise_scale=5e-3,
-            exclude_current_positions_from_observation=True,
             args=None
     ):
         utils.EzPickle.__init__(**locals())
 
-        self._forward_reward_weight = forward_reward_weight
-        self._ctrl_cost_weight = ctrl_cost_weight
-
-        self._healthy_reward = healthy_reward
-        self._terminate_when_unhealthy = terminate_when_unhealthy
-
         self._healthy_z_range = healthy_z_range
         self._healthy_angle_range = healthy_angle_range
-
-        self._reset_noise_scale = reset_noise_scale
-
-        self._exclude_current_positions_from_observation = (
-            exclude_current_positions_from_observation
-        )
 
         # My variables:
         self.args = args
@@ -53,9 +35,9 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         self.d_gain = 10
 
         # Interpolation of gait reference wrt phase.
-        ref = np.loadtxt('environments/walker2d/2d_walking.txt')
+        ref = np.loadtxt(args.gait_ref_file)
 
-        self.gait_cycle_time = 1
+        self.gait_cycle_time = args.gait_cycle_time
         self.gait_ref = interp1d(np.arange(0, 11) / 10, ref, axis=0)
         self.gait_vel_ref = interp1d(np.arange(0, 11) / 10, np.diff(np.concatenate((np.zeros((1, 9)), ref))/.1, axis=0), axis=0)
 
@@ -76,7 +58,6 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
         self.frame_skip = self.args.frame_skip
 
-        # for amp
         self.total_reward = 0
 
         walker2d_mujoco_env.MujocoEnv.__init__(self, xml_file, self.frame_skip)
@@ -84,7 +65,7 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         self.init_qvel[1:] = 0
 
     @property
-    def is_healthy(self):
+    def done(self):
         z, angle = self.sim.data.qpos[1:3]
 
         min_z, max_z = self._healthy_z_range
@@ -94,22 +75,15 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
         healthy_angle = min_angle < angle < max_angle
         is_healthy = healthy_z and healthy_angle
 
-        return is_healthy
-
-    @property
-    def done(self):
-        done = not self.is_healthy if self._terminate_when_unhealthy else False
+        done = not is_healthy
         return done
 
-    def _get_obs(self):
+    def get_obs(self):
         if self.phase < 0.5:
             position = self.sim.data.qpos.flat.copy()
-            #ipdb.set_trace()
+            position = position[1:]
+
             velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
-
-            if self._exclude_current_positions_from_observation:
-                position = position[1:]
-
             observation = np.concatenate((position, velocity / 10, np.array([self.phase]))).ravel()
 
         else:
@@ -117,9 +91,6 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
                 self.sim.data.qvel[6:9]/10, self.sim.data.qvel[3:6]/10, np.array([self.phase - 0.5])))
 
         return observation
-
-    def observe(self):
-        return self._get_obs()
 
     @property
     def phase(self):
@@ -177,7 +148,7 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
                     self.impulse_time_start = self.data.time
                     self.force = self.args.perturbation_force if self.args.const_perturbation else self.get_rand_force()
 
-        observation = self._get_obs()
+        observation = self.get_obs()
 
         joint_ref = ref[3:]
         joint_obs = self.sim.data.qpos[3:9]
@@ -195,7 +166,6 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
         reward = 0.3*orient_reward+0.4*joint_reward+0.3*pos_reward
 
-        #for amp
         self.total_reward += reward
 
         done = self.done
@@ -219,10 +189,9 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
 
         self.set_state(qpos, self.init_qvel)
 
-        #for amp
         self.total_reward = 0
 
-        observation = self._get_obs()
+        observation = self.get_obs()
         return observation
 
     def viewer_setup(self):
@@ -232,12 +201,14 @@ class WalkerEnv(walker2d_mujoco_env.MujocoEnv, utils.EzPickle):
             else:
                 setattr(self.viewer.cam, key, value)
 
-    # for amp
     def reset_time_limit(self):
         if self.sim.data.time > self.max_ep_time:
             return self.reset()
         else:
-            return self._get_obs()
+            return self.get_obs()
 
     def get_total_reward(self):
         return self.total_reward
+
+    def get_elapsed_time(self):
+        return self.data.time

@@ -43,7 +43,6 @@ class WalkerFixedEnv(WalkerEnv):
                     self.impulse_time_start = self.data.time
                     self.force = self.args.perturbation_force if self.args.const_perturbation else self.get_rand_force()
 
-
         observation = self._get_obs()
 
         joint_ref = ref[3:]

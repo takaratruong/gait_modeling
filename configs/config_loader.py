@@ -4,20 +4,28 @@ import torch
 p = configargparse.ArgParser()
 
 """ Logistics (Naming/Loading/Saving/etc..) """
-p.add('-n', '--exp_name', required=True)
 p.add('-c', '--config', required=True, is_config_file=True, help='config file path')
-p.add('--alg', type=str, default='ppo', help='ppo or amp')
-
-p.add('--wandb', action='store_true')
+p.add('-n', '--exp_name', type=str, default='default_exp_name')
 p.add('--project_name', type=str, required=True)
+
+p.add('--alg', type=str, default='ppo', help='ppo or amp')
+p.add('--seed', type=int, default=2)
+
+p.add('--wandb',  action='store_true')
 
 p.add('--log_dir', type=str, default='results/')
 p.add('--eval_freq', type=int, default=10)
-p.add('--vid_freq', type=int, default=10)
+p.add('--vid_freq', type=int, default=50)
 
-p.add('--gait_ref_file', type=str, default='' )
-p.add('--gait_cycle_time', type=float, default=1.266616)
+
+# Gait Parameters
+p.add('--gait_ref_file', type=str, default='')
+p.add('--gait_cycle_time', type=float, default=None)
+p.add('--gait_cycle_vel', type=float, default=1)
 p.add('--treadmill_velocity', type=float, default=1.25)
+
+# Policy Parameters
+p.add('--policy_path', type=str, default=None)  # Experiment folder name defining the gait policy (loaded from results)
 
 
 """ Experiment Parameters """
@@ -34,11 +42,8 @@ p.add('--num_steps', type=int, default=2048) # change later for amp
 p.add('--time_steps', type=int, default=10e8)
 p.add('--num_epochs', type=int, default=10)
 
-p.add('--frame_skip', type=int, default=20)
+p.add('--frame_skip', type=int, default=10)
 p.add('--max_ep_time', type=float, default=10.0)
-
-# Policy Parameters
-p.add('--gait_policy', type=str)  # Experiment folder name defining the gait policy (loaded from results)
 
 # Perturbation Parameters
 p.add('-rp',  '--rand_perturbation', action='store_true')  # Use random perturbation

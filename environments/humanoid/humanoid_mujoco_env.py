@@ -11,9 +11,7 @@ try:
     import mujoco_py
 except ImportError as e:
     raise error.DependencyNotInstalled(
-        "{}. (HINT: you need to install mujoco_py, and also perform the setup instructions here: https://github.com/openai/mujoco-py/.)".format(
-            e
-        )
+        "{}. (HINT: you need to install mujoco_py, and also perform the setup instructions here: https://github.com/openai/mujoco-py/.)".format(e)
     )
 
 DEFAULT_SIZE = 500
@@ -74,15 +72,15 @@ class MujocoEnv(gym.Env):
 
         self.seed()
 
-    # Changed Action Space
     def _set_action_space(self):
-        #bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
-        #low, high = bounds.T
-        #28 actuators + 1 phase
-        low = np.array([-.5 for _ in range(28)] + [-1]).astype('float32')
-        high = np.array([.5 for _ in range(28)] + [1]).astype('float32')
+        bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
+        low, high = bounds.T
 
-        self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
+        # add phase action
+        low = np.hstack((low, np.array([-1])))
+        high = np.hstack((high, np.array([1])))
+
+        self.action_space = spaces.Box(low=np.float32(low), high=np.float32(high))
         return self.action_space
 
     def _set_observation_space(self, observation):
