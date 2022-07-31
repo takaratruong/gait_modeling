@@ -436,7 +436,6 @@ class RL(object):
             if (iterations) % self.params.vid_freq == 0 and self.vid_callback is not None:
                 self.vid_callback.save_video(self.gpu_model)
 
-
             if (iterations) % 5 == 0:
                 reward_mean, reward_std, ep_len_mean, ep_len_std = self.run_test_with_noise(num_test=2)
                 print("reward: ", np.round(reward_mean,3), u"\u00B1" ,np.round(reward_std,3))

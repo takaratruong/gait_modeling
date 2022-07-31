@@ -103,7 +103,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
         done = not self.is_healthy if self._terminate_when_unhealthy else False
         return done
 
-    def _get_obs(self):
+    def get_obs(self):
 
         if self.phase <= .5:
             position = self.sim.data.qpos.flat.copy()
@@ -125,8 +125,6 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
 
         return observation
 
-    def observe(self):
-        return self._get_obs()
 
     @property
     def phase(self):
@@ -214,11 +212,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
 
             # self.set_state(self.target_reference[:-1], self.init_qvel)
 
-        observation = self._get_obs()
-
         reward = self.calc_reward(target_ref)
-
-        # print(reward)
         self.total_reward += reward
 
         done = self.done
@@ -227,6 +221,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
             info["TimeLimit.truncated"] = not done
             done = True
 
+        observation = self.get_obs()
         return observation, reward, done, info
 
     def reset_model(self):
@@ -239,7 +234,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
 
         self.total_reward = 0
         self.force = self.get_force()
-        observation = self._get_obs()
+        observation = self.get_obs()
 
         return observation
 
@@ -247,7 +242,7 @@ class SkeletonEnv(mujoco_env_skeleton.MujocoEnv, utils.EzPickle):
         if self.sim.data.time > self.max_ep_time:
             return self.reset()
         else:
-            return self._get_obs()
+            return self.get_obs()
 
     def get_total_reward(self):
         return self.total_reward

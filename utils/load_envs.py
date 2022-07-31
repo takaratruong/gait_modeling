@@ -19,7 +19,6 @@ def load(env, args, run):
 
     return train_env, eval_env, vid_env
 
-
 def load_environments(args, run=None):
 
     assert args.environment in ['walker2d', 'walker2d_fixed', 'humanoid', 'humanoid_treadmill', 'rajagopal', 'skeleton'], 'args.environment not included in loader'

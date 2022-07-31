@@ -3,6 +3,7 @@ import torch.utils.data
 from configs.config_loader import load_args
 from rl_algs.amp_models import ActorCriticNet
 from utils.load_envs import load_environments
+import utils.messages as message
 import ipdb
 
 if __name__ == '__main__':
@@ -10,10 +11,7 @@ if __name__ == '__main__':
     _, env, _ = load_environments(args)
 
     if args.policy_path is None:
-        print('---------------------------------------------------------------------------------------')
-        print('Specify policy path via argument command flag: --gait_policy relative/path/to/policy.pt')
-        print('Running zero-action policy')
-        print('---------------------------------------------------------------------------------------')
+        message.no_policy()
 
     # Recreate model and load trained weights
     model = None

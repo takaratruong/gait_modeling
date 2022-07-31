@@ -1,28 +1,24 @@
 ## Logistics ##
-env = humanoid
+env = humanoid_treadmill
 wandb = True
-project_name = humanoid
+project_name = humanoid_treadmill
 
 
 ## Environment and Training Parameters ##
 frame_skip = 4
-num_envs = 25
+num_envs = 50
 max_ep_time = 10
 num_steps = 100
 
-
 ## Gait Parameters ##
-gait_ref_file = environments/humanoid/deep_mimic_walk.txt
-gait_cycle_vel = 1
-gait_cycle_time = 1.26654  # 38*0.03333
-
+gait_ref_file = environments/humanoid/subject1_walk_treadmill.txt
+treadmill_velocity = .8
 
 ## Reward and Action Parameters: ##
 rot_weight = .3
 jnt_weight = .4
 pos_weight = .3
 phase_action_mag = .04
-
 
 ## Perturbation Parameters: ##
 # const_perturbation = True

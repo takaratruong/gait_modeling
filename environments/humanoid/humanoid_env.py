@@ -119,6 +119,7 @@ class HumanoidEnv(mujoco_env_humanoid.MujocoEnv, utils.EzPickle):
         if self.phase <= .5:
             position = self.sim.data.qpos.flat.copy()
             velocity = np.clip(self.sim.data.qvel.flat.copy(), -1000, 1000)
+
             observation = np.concatenate((position[1:], velocity / 10, np.array([self.phase]))).ravel()
         else:
             flipped_pos = flip_position(self.sim.data.qpos.flat.copy())

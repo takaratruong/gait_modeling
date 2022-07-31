@@ -3,16 +3,23 @@ from configs.config_loader import load_args
 from rl_algs.amp_ppo import RL
 from utils.video_callback import AMPVideoCallback
 from utils.load_envs import load_environments
+import utils.messages as message
 
 if __name__ == '__main__':
     args = load_args()
-
-    print("Exp Name: ", args.exp_name)
-    print("Config File:", args.config)
-    print("Algorithm:", args.alg)
+    message.header_message(args)
 
     # Initialize wandb
-    run = wandb.init(project=args.project_name, config=args, name=args.exp_name, monitor_gym=True, dir=args.log_dir) if args.wandb else None
+    run = None
+    if args.wandb:
+        run = wandb.init(project=args.project_name, config=args, name=args.exp_name, monitor_gym=True, dir=args.log_dir)
+        wandb.define_metric("step", hidden=True)
+        wandb.define_metric("eval/reward", step_metric="step")
+        wandb.define_metric("eval/ep_len", step_metric="step")
+
+        wandb.define_metric("train/critic loss", step_metric="step")
+        wandb.define_metric("train/actor loss", step_metric="step")
+        wandb.define_metric("train/disc loss", step_metric="step")
 
     # Load environments
     train_env, _, vid_env = load_environments(args, run)
